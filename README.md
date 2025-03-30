@@ -404,7 +404,7 @@ import { Component } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MerSelectComponent } from '@merelis/angular/select';
-import { provideMerMaterialIntegration } from '@merelis/angular-material';
+import { MerSelectFormFieldControl } from "@merelis/angular-material/select";
 
 @Component({
   selector: 'app-material-example',
@@ -412,7 +412,8 @@ import { provideMerMaterialIntegration } from '@merelis/angular-material';
   imports: [
     MatFormFieldModule,
     MatInputModule,
-    MerSelectComponent
+    MerSelectComponent,
+    MerSelectFormFieldControl
   ],
   providers: [
     provideMerMaterialIntegration() // Enable integration with Angular Material
@@ -420,7 +421,7 @@ import { provideMerMaterialIntegration } from '@merelis/angular-material';
   template: `
     <mat-form-field appearance="outline">
       <mat-label>Select a user</mat-label>
-      <mer-select
+      <mer-select merSelectFormField
         [dataSource]="users"
         [(value)]="selectedUser"
         [displayWith]="displayUserName"
