@@ -1,0 +1,14 @@
+@if (multiple) {
+    <input type="checkbox"
+        [disabled]="disabled"
+        [checked]="selected ? 'checked' : 'unchecked'"
+        aria-hidden="true">
+}
+
+<ng-content select=".icon"></ng-content>
+
+<span class="mer-option-label" #text><ng-content></ng-content></span>
+
+@if (group) {
+    <span class="cdk-visually-hidden">({{ group.label() }})</span>
+}

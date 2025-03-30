@@ -1,0 +1,9 @@
+{
+  "name": "@merelis/utils",
+  "version": "1.0.0",
+  "peerDependencies": {
+      "lodash-es": ">=4.17.21",
+      "luxon": ">=3.5.0"
+  },
+  "sideEffects": false
+}

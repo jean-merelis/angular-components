@@ -1,0 +1,262 @@
+$border: 1px solid #8c8a8a;
+$border-invalid: 1px solid #c10909;
+$color: black;
+$background-color: white;
+
+@mixin base {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+    box-sizing: border-box;
+    width: 250px;
+    background-color: transparent;
+    border: none;
+    color: inherit;
+    outline: none;
+    font-family: var(--mer-select-font), system-ui, Roboto, sans-serif;
+    line-height: var(--mer-select-line-height, 1em);
+    font-size: var(--mer-select-font-size, 1em);
+    letter-spacing: var(--mer-select-letter-spacing);
+    font-weight: var(--mer-select-font-weight, normal);
+    min-height: var(--mer-select-min-height, 32px);
+
+    .mer-select-trigger-wrapper, .mer-select-trigger-placeholder{
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        font-size: inherit;
+        letter-spacing: inherit;
+        color: inherit;
+        display: flex;
+        flex-direction: row;
+        box-sizing: border-box;
+        flex-grow: 1;
+        min-width: 0;
+        align-items: center;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-left: var(--mer-select-side-padding, 8px);
+        padding-right: var(--mer-select-side-padding, 8px);
+        z-index: 2;
+    }
+    .mer-select-trigger-placeholder {
+        z-index: 0;
+    }
+
+    .chevron-wrapper{
+        z-index: 3;
+        cursor: default;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 4px;
+
+        .chevron {
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 5px 5px 0 5px;
+            border-color: #b3b3b3 transparent transparent transparent;
+            border-top-color: var(--mer-select-chevron-icon-color, #b3b3b3);
+        }
+        .chevron:hover {
+            border-top-color: var(--mer-select-chevron-icon-color--hover, #353535);
+        }
+
+        .clear-icon {
+            width: 8px;
+            height: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .clear-icon:before,
+        .clear-icon:after {
+            content: '';
+            position: absolute;
+            width: 1px;
+            height: 100%;
+            background-color: var(--mer-select-chevron-icon-color, #b3b3b3);
+        }
+        .clear-icon:hover:before,
+        .clear-icon:hover:after {
+            background-color: var(--mer-select-chevron-icon-color--hover, #353535);
+        }
+
+        .clear-icon:before {
+            transform: rotate(45deg);
+        }
+
+        .clear-icon:after {
+            transform: rotate(-45deg);
+        }
+    }
+
+    input.mer-select-input {
+        z-index: 1;
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: transparent;
+        font-family: inherit;
+        font-weight: inherit;
+        line-height: inherit;
+        font-size: inherit;
+        letter-spacing: inherit;
+        color: inherit;
+
+        padding-left: var(--mer-select-side-padding, 8px);
+        padding-right: var(--mer-select-side-padding, 8px);
+
+        border: none;
+        outline: none;
+    };
+
+    --mer-progress-bar-height: var(--mer-select-loading-height, 2px);
+    --mer-progress-bar-background-color: var(--mer-select-loading-background-color, #d7e8fb);
+    --mer-progress-bar-color: var(--mer-select-loading-color, #0772CDFF);
+    mer-progress-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 3;
+    }
+
+}
+
+
+
+@mixin default {
+    mer-select {
+        @include base;
+    }
+
+    mer-select.mer-standard{
+        background-color: var(--mer-select-background-color, $background-color);
+        border: var(--mer-select-border--focused, $border);
+        color: var(--mer-select-background-color, $color);
+
+        &.focused:not(.disabled):not(.ng-invalid),
+        &:focus-within:not(.disabled):not(.ng-invalid)
+        {
+            color: var(--mer-select-color--focused, $color);
+            background-color: var(--mer-select-background-color--focused, $background-color);
+            border: var(--mer-select-border--focused, $border);
+            outline: var(--mer-select-outline--focused, solid #4e95e8 2px );
+            outline-offset: var(--mer-select-outline-offset--focused, -1px );
+        }
+
+
+        &.disabled {
+            color: var(--mer-select-color--disabled, #707070);
+            background-color: var(--mer-select-background-color--disabled, #ececec);
+            border: var(--mer-select-border--disabled, $border);
+            outline: var(--mer-select-outline--disabled );
+            outline-offset: var(--mer-select-outline-offset--disabled );
+        }
+
+        &.ng-invalid {
+            color: var(--mer-select-color--invalid, $color);
+            background-color: var(--mer-select-background-color--invalid, $background-color);
+            border: var(--mer-select-border--invalid, $border-invalid);
+        }
+
+        &.ng-invalid.focused,
+        &.ng-invalid:focus-within
+        {
+            color: var(--mer-select-color--invalid, $color);
+            background-color: var(--mer-select-background-color--invalid, $background-color);
+            border: var(--mer-select-border--invalid, $border-invalid);
+            outline: var(--mer-select-outline--invalid, solid #c10909 2px );
+            outline-offset: var(--mer-select-outline-offset--invalid, -1px );
+        }
+    }
+
+    mat-form-field {
+
+        .mer-select {
+            --mer-progress-bar-height: var(--mer-select-loading-height, 4px);
+            width: calc(100% + 10px);
+            background-color: transparent;
+            border: none;
+            color: inherit;
+            font-family: inherit;
+            line-height: var(--mer-select-line-height, 1em);
+            font-size: var(--mer-select-font-size, 1em);
+            letter-spacing: var(--mer-select-letter-spacing);
+            font-weight: var(--mer-select-font-weight, normal);
+            min-height: var(--mer-select-min-height, 24px);
+            height: auto;
+
+            --mer-select-side-padding: 0;
+
+            .chevron-wrapper {
+                padding: 0 4px;
+            }
+
+            &.focused:not(.disabled):not(.ng-invalid) {
+                color: inherit;
+                background-color: transparent;
+                border: none;
+                outline: none;
+                outline-offset: inherit;
+            }
+
+            &.disabled {
+                color: var(--mdc-outlined-text-field-disabled-input-text-color);
+                background-color: transparent;
+                border: none;
+                outline: none;
+                outline-offset: unset;
+            }
+
+            &.ng-invalid {
+                color: inherit;
+                background-color: transparent;
+                border: none;
+            }
+
+            &.ng-invalid.focused {
+                color: inherit;
+                background-color: transparent;
+                border: none;
+                outline: none;
+                outline-offset: unset;
+            }
+        }
+
+
+        mer-progress-bar {
+            bottom: -15px;
+            height: 4px;
+            left: -16px;
+            right: -6px;
+            width: unset !important;
+        }
+    }
+
+    mat-form-field.mat-form-field-appearance-fill{
+        &.disabled{
+            color: var(--mdc-filled-text-field-disabled-input-text-color);
+        }
+        .chevron-wrapper {
+            margin-top: -12px;
+        }
+        mer-progress-bar {
+            bottom: -7px;
+            height: 4px;
+            left: -16px;
+            right: -22px;
+            width: unset !important;
+        }
+    }
+}

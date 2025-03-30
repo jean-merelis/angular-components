@@ -1,0 +1,14 @@
+@if(shouldRun()) {
+    <mat-sidenav-container class="sidenav" >
+        <mat-sidenav mode="side" opened >
+            <mat-nav-list role="list" class="navlist">
+                <mat-list-item role="navigation" routerLink="select" routerLinkActive="active">Select</mat-list-item>
+            </mat-nav-list>
+        </mat-sidenav>
+
+        <mat-sidenav-container>
+            <router-outlet/>
+        </mat-sidenav-container>
+
+    </mat-sidenav-container>
+}

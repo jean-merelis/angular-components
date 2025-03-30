@@ -1,0 +1,17 @@
+
+.mer-option-group {
+    color: var(--mer-option-group-color, #505050);
+    font-family: var(--mer-option-group-font), system-ui, Roboto, sans-serif;
+    line-height: var(--mer-option-group-line-height, 1em);
+    font-size: var(--mer-option-group-font-size, 0.9em);
+    letter-spacing: var(--mer-option-group-letter-spacing);
+    font-weight: var(--mer-option-group-font-weight, 500);
+}
+
+.mer-option-group-label {
+    min-height: var(--mer-option-group-min-height, 48px);
+
+    &.mer-option-disabled {
+        opacity: var(--mer-option-group-label-disabled-opacity, 0.7);
+    }
+}

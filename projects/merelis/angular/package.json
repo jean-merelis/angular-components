@@ -1,0 +1,17 @@
+{
+    "name": "@merelis/angular",
+    "version": "1.0.0",
+    "license": "MIT",
+    "peerDependencies": {
+        "@angular/common": ">=19.0.0",
+        "@angular/core": ">=19.0.0",
+        "@angular/cdk": ">=19.0.0",
+        "@merelis/utils": ">=1.0.0",
+        "lodash-es": ">=4.17.21",
+        "rxjs": ">=7.8.0"
+    },
+    "dependencies": {
+        "tslib": ">=2.6.2"
+    },
+    "sideEffects": false
+}

@@ -1,0 +1,35 @@
+
+.mer-progress-bar {
+    display: block;
+    height: var(--mer-progress-bar-height, 4px);
+    background-color: var(--mer-progress-bar-background-color, rgba(5, 114, 206, 0.2));
+    width: 100%;
+    overflow: hidden;
+
+    .mer-progress-bar-value {
+        width: 0;
+        height: 100%;
+        background-color: var(--mer-progress-bar-color, rgb(5, 114, 206));
+    }
+
+    &.mer-progress-bar-indeterminate {
+        .mer-progress-bar-value {
+            width: 100%;
+            animation: indeterminateAnimation 1s infinite linear;
+            transform-origin: 0% 50%;
+        }
+    }
+
+    @keyframes indeterminateAnimation {
+        0% {
+            transform: translateX(0) scaleX(0);
+        }
+        40% {
+            transform: translateX(0) scaleX(0.4);
+        }
+        100% {
+            transform: translateX(100%) scaleX(0.5);
+        }
+    }
+}
+

@@ -1,0 +1,98 @@
+.mer-option {
+    display: flex;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    align-items: center;
+    background: transparent;
+
+    color: var(--mer-option-color, #121212);
+    font-family: var(--mer-option-font), system-ui, Roboto, sans-serif;
+    line-height: var(--mer-option-line-height, 1em);
+    font-size: var(--mer-option-font-size, 1em);
+    letter-spacing: var(--mer-option-letter-spacing);
+    font-weight: var(--mer-option-font-weight, normal);
+    min-height: var(--mer-option-min-height, 48px);
+    padding-left: var(--mer-option-side-padding, 8px);
+    padding-right: var(--mer-option-side-padding, 8px);
+
+    // Increase specificity to override styles from list theme.
+    &:hover:not(.mer-option-disabled) {
+        background-color: var(--mer-option-hover-background-color, #f6f6f6);
+    }
+
+    &:focus,
+    &.mer-option-active {
+        background-color: var(--mer-option-active-background-color, #ececec);
+    }
+
+    &.mer-option-selected:not(.mer-option-disabled) {
+        .mer-option-label {
+            color: var(--mer-option-selected-color, #0d67ca);
+        }
+
+        // We don't change the background in multiple mode since
+        // it has the checkbox to show the selected state.
+        &:not(.mer-option-multiple) {
+            background-color: var(--mer-option-selected-background-color, #eef6ff);
+        }
+    }
+
+    &.mer-option-disabled {
+        cursor: default;
+
+        // Give the visual content of this list item a lower opacity. This creates the "gray" appearance
+        // for disabled state. Set the opacity on the pseudo checkbox and projected content. Set
+        // opacity only on the visual content rather than the entire list-item so we don't affect the
+        // focus ring from `.mat-mdc-focus-indicator`.
+        //
+        // MatOption uses a child `<div>` element for its focus state to align with how ListItem does
+        // its focus state.
+        .mat-mdc-option-pseudo-checkbox, .mdc-list-item__primary-text, > mat-icon {
+            opacity: 0.6; // TODO:
+        }
+
+        // Prevent clicking on disabled options with mouse. Support focusing on disabled option using
+        // keyboard, but not with mouse.
+        pointer-events: none;
+
+    }
+
+    // Note that we bump the padding here, rather than padding inside the
+    // group so that ripples still reach to the edges of the panel.
+    .mer-option-group &:not(.mer-option-multiple) {
+        padding-left: var(--mer-option-group-indent, 20px);
+
+        [dir='rtl'] & {
+            padding-left: var(--mer-option-side-padding, 8px);
+            padding-right: var(--mer-option-group-indent, 20px);
+
+        }
+    }
+
+
+    // Needs to be overwritten explicitly, because the style can
+    // leak in from the list and cause the text to truncate.
+    .mer-option-label {
+        white-space: normal;
+        font-size: inherit;
+        font-weight: inherit;
+        letter-spacing: inherit;
+        line-height: inherit;
+        font-family: inherit;
+        text-decoration: inherit;
+        text-transform: inherit;
+
+        margin-right: auto;
+
+        [dir='rtl'] & {
+            margin-right: 0;
+            margin-left: auto;
+        }
+    }
+}
+.mer-mat-form-field {
+    .mer-option {
+        padding-left: var(--mer-option-material-side-padding, 16px);
+        padding-right: var(--mer-option-material-side-padding, 16px);
+    }
+}

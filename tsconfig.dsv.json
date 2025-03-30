@@ -1,0 +1,41 @@
+/* To learn more about this file see: https://angular.io/config/tsconfig. */
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+      "paths": {
+          "@merelis/angular/*": ["./projects/merelis/angular/*"],
+          "@merelis/angular": ["./projects/merelis/angular"],
+          "@merelis/angular-material/*": ["./projects/merelis/angular-material/*"],
+          "@merelis/angular-material": ["./projects/merelis/angular-material"],
+          "@merelis/utils/*": ["./projects/merelis/utils/*"],
+          "@merelis/utils": ["./projects/merelis/utils"]
+      },
+    "outDir": "./dist/out-tsc",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "target": "ES2022",
+    "module": "ES2022",
+    "useDefineForClassFields": false,
+    "lib": [
+      "ES2022",
+      "dom"
+    ]
+  },
+  "angularCompilerOptions": {
+    "enableI18nLegacyMessageIdFormat": false,
+    "strictInjectionParameters": true,
+    "strictInputAccessModifiers": true,
+    "strictTemplates": true
+  }
+}

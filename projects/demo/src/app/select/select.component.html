@@ -1,0 +1,101 @@
+
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
+    <mat-form-field>
+        <mat-label>Colors</mat-label>
+        <mer-select merSelectFormField [options]="colors"></mer-select>
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Person</mat-label>
+        <mer-select merSelectFormField [options]="data" [displayWith]="displayPersonWith"></mer-select>
+    </mat-form-field>
+</div>
+
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
+    <mat-form-field>
+        <mat-label>Colors</mat-label>
+        <mer-select merSelectFormField [options]="colors" [value]="'Blue'" [disabled]="true"></mer-select>
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Person</mat-label>
+        <mer-select merSelectFormField [options]="data" [displayWith]="displayPersonWith" [value]="{name: 'Nobody'}" [disabled]="true"></mer-select>
+    </mat-form-field>
+</div>
+
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
+    <mat-form-field>
+        <mat-label>Colors</mat-label>
+        <mer-select merSelectFormField [options]="colors" [formControl]="matform1" required></mer-select>
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Person</mat-label>
+        <mer-select merSelectFormField
+                     placeholder="Search..."
+                     [options]="data" [displayWith]="displayPersonWith" [formControl]="matform2" required></mer-select>
+    </mat-form-field>
+</div>
+
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
+    <mat-form-field>
+        <mat-label>Colors</mat-label>
+        <mer-select #s1 merSelectFormField [options]="colors"></mer-select>
+    </mat-form-field>
+
+    <mat-form-field>
+        <mat-label>Person</mat-label>
+        <mer-select #s2 merSelectFormField [options]="data" [displayWith]="displayPersonWith"></mer-select>
+    </mat-form-field>
+
+    <div>
+        <button type="button" (click)="toggleLoading(s1, s2)"> Toggle loading</button>
+    </div>
+</div>
+
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
+    <mat-form-field appearance="outline">
+        <mat-label>Colors</mat-label>
+        <mer-select #s3 merSelectFormField [options]="colors"></mer-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+        <mat-label>Person</mat-label>
+        <mer-select #s4 merSelectFormField [options]="data" [displayWith]="displayPersonWith"></mer-select>
+    </mat-form-field>
+
+    <div>
+        <button type="button" (click)="toggleLoading(s3, s4)"> Toggle loading</button>
+    </div>
+</div>
+
+
+
+
+<div style="padding: 20px">
+    colors:
+    <mer-select [options]="colors" class="mer-standard"></mer-select>
+
+    disableOpeningWhenFocusedByKeyboard=true
+    <mer-select [options]="colors" disableOpeningWhenFocusedByKeyboard class="mer-standard"></mer-select>
+
+
+    colors: disableSearch
+    <mer-select [options]="colors" disableSearch class="mer-standard"></mer-select>
+
+    colors: canClear=false
+    <mer-select [options]="colors" [canClear]="false" class="mer-standard"></mer-select>
+
+    colors: readonly
+    <mer-select [options]="colors" readOnly [value]="color" class="mer-standard"></mer-select>
+
+
+    colors: disabled
+    <mer-select [options]="colors" [disabled]="true" [value]="color" class="mer-standard"></mer-select>
+
+    colors: formControl and required
+    <mer-select [options]="colors" [formControl]="form" class="mer-standard"></mer-select>
+
+    people
+        <mer-select [options]="data" [displayWith]="displayPersonWith" class="mer-standard"></mer-select>
+</div>

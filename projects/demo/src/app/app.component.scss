@@ -1,0 +1,38 @@
+mat-sidenav {
+    width: 240px;
+    min-width: 240px;
+}
+app-root {
+    //background:#9b9b9b;
+    font-family: system-ui, Roboto, sans-serif;
+    padding: 40px;
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+
+
+
+    .sidenav {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+
+    mat-list-item {
+        cursor: pointer;
+
+        &.active {
+            background-color: #ecf2fb;
+            color: #0d67ca;
+        }
+    }
+}
+
+
