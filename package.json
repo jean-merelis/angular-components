@@ -9,7 +9,14 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
-  "private": true,
+  "private": false,
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/jean-merelis/angular-components.git"
+  },
+  "bugs": {
+      "url": "https://github.com/jean-merelis/angular-components/issues"
+  },
   "dependencies": {
     "@angular/animations": "^19.2.4",
     "@angular/cdk": "^19.2.7",

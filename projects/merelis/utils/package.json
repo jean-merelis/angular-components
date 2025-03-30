@@ -1,9 +1,17 @@
 {
-  "name": "@merelis/utils",
-  "version": "1.0.0",
-  "peerDependencies": {
-      "lodash-es": ">=4.17.21",
-      "luxon": ">=3.5.0"
-  },
-  "sideEffects": false
+    "name": "@merelis/utils",
+    "version": "1.0.1",
+    "author": "Jean Merelis",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jean-merelis/angular-components.git"
+    },
+    "bugs": {
+        "url": "https://github.com/jean-merelis/angular-components/issues"
+    },
+    "peerDependencies": {
+        "lodash-es": ">=4.17.21",
+        "luxon": ">=3.5.0"
+    },
+    "sideEffects": false
 }
