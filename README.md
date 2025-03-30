@@ -52,7 +52,7 @@ import { MerProgressBar } from '@merelis/angular/progress-bar';
     MerProgressBar
   ],
   template: `
-    <mer-select [options]="items" [(value)]="selectedItem"></mer-select>
+    <mer-select [dataSource]="items" [(value)]="selectedItem"></mer-select>
     <mer-progress-bar [value]="0.5"></mer-progress-bar>
   `
 })
@@ -70,7 +70,7 @@ The `MerSelectComponent` offers a robust alternative to the native HTML select, 
 
 ```html
 <mer-select 
-  [options]="optionsList" 
+  [dataSource]="optionsList" 
   [(value)]="selectedValue"
   [placeholder]="'Select an option'">
 </mer-select>
@@ -78,32 +78,31 @@ The `MerSelectComponent` offers a robust alternative to the native HTML select, 
 
 #### Input Properties
 
-| Name | Type | Default | Description |
-|------|------|--------|-----------|
-| options | Array\<T\> | undefined | List of available options for selection |
-| dataSource | SelectDataSource\<T\> | undefined | Alternative data source for the component |
-| value | T \| T[] \| null | undefined | Currently selected value |
-| loading | boolean | false | Displays loading indicator using MerProgressBar |
-| disabled | boolean | false | Disables the component |
-| readOnly | boolean | false | Sets the component as read-only |
-| disableSearch | boolean | false | Disables text search functionality |
-| disableOpeningWhenFocusedByKeyboard | boolean | false | Prevents the panel from opening automatically when focused via keyboard |
-| multiple | boolean | false | Allows multiple selection |
-| canClear | boolean | true | Allows clearing the selection |
-| alwaysIncludesSelected | boolean | false | Always includes the selected item in the dropdown, even if it doesn't match the filter |
-| autoActiveFirstOption | boolean | true | Automatically activates the first option when the panel is opened |
-| debounceTime | number | 100 | Debounce time for text input (in ms) |
-| panelOffsetY | number | 0 | Vertical offset of the options panel |
-| compareWith | Comparable\<T\> | undefined | Function to compare values |
-| displayWith | DisplayWith\<T\> | undefined | Function to display values as text |
-| filterPredicate | FilterPredicate\<T\> | undefined | Function to filter options based on typed text |
-| disableOptionPredicate | OptionPredicate\<T\> | () => false | Function to determine which options should be disabled |
-| disabledOptions | T[] | [] | List of options that should be disabled |
-| connectedTo | MerSelectPanelOrigin | undefined | Element to which the panel should connect |
-| panelClass | string \| string[] | undefined | CSS class(es) applied to the options panel |
-| panelWidth | string \| number | undefined | Width of the options panel |
-| position | 'auto' \| 'above' \| 'below' | 'auto' | Position of the panel relative to the input |
-| placeholder | string | undefined | Text to display when no item is selected |
+| Name | Type                                    | Default | Description                                                                            |
+|------|-----------------------------------------|--------|----------------------------------------------------------------------------------------|
+| dataSource | Array\<T\> &#124; SelectDataSource\<T\> | undefined | List of available options for selection or data source for the component   |
+| value | T \| T[] \| null                        | undefined | Currently selected value                                                               |
+| loading | boolean                                 | false | Displays loading indicator using MerProgressBar                                        |
+| disabled | boolean                                 | false | Disables the component                                                                 |
+| readOnly | boolean                                 | false | Sets the component as read-only                                                        |
+| disableSearch | boolean                                 | false | Disables text search functionality                                                     |
+| disableOpeningWhenFocusedByKeyboard | boolean                                 | false | Prevents the panel from opening automatically when focused via keyboard                |
+| multiple | boolean                                 | false | Allows multiple selection                                                              |
+| canClear | boolean                                 | true | Allows clearing the selection                                                          |
+| alwaysIncludesSelected | boolean                                 | false | Always includes the selected item in the dropdown, even if it doesn't match the filter |
+| autoActiveFirstOption | boolean                                 | true | Automatically activates the first option when the panel is opened                      |
+| debounceTime | number                                  | 100 | Debounce time for text input (in ms)                                                   |
+| panelOffsetY | number                                  | 0 | Vertical offset of the options panel                                                   |
+| compareWith | Comparable\<T\>                         | undefined | Function to compare values                                                             |
+| displayWith | DisplayWith\<T\>                        | undefined | Function to display values as text                                                     |
+| filterPredicate | FilterPredicate\<T\>                    | undefined | Function to filter options based on typed text                                         |
+| disableOptionPredicate | OptionPredicate\<T\>                    | () => false | Function to determine which options should be disabled                                 |
+| disabledOptions | T[]                                     | [] | List of options that should be disabled                                                |
+| connectedTo | MerSelectPanelOrigin                    | undefined | Element to which the panel should connect                                              |
+| panelClass | string \| string[]                      | undefined | CSS class(es) applied to the options panel                                             |
+| panelWidth | string \| number                        | undefined | Width of the options panel                                                             |
+| position | 'auto' \| 'above' \| 'below'            | 'auto' | Position of the panel relative to the input                                            |
+| placeholder | string                                  | undefined | Text to display when no item is selected                                               |
 
 #### Output Events
 
@@ -129,7 +128,7 @@ interface User {
   selector: 'app-example',
   template: `
     <mer-select
-      [options]="users"
+      [dataSource]="users"
       [(value)]="selectedUser"
       [displayWith]="displayUserName"
       [compareWith]="compareUsers"
@@ -236,7 +235,7 @@ The `MerSelectComponent` allows customization of the trigger (clickable area) an
 ### Custom Trigger Template
 
 ```html
-<mer-select [options]="users" [(value)]="selectedUser">
+<mer-select [dataSource]="users" [(value)]="selectedUser">
   <ng-template merSelectTriggerDef>
     <div class="custom-trigger">
       <img *ngIf="selectedUser?.avatar" [src]="selectedUser.avatar" class="avatar">
@@ -249,7 +248,7 @@ The `MerSelectComponent` allows customization of the trigger (clickable area) an
 ### Custom Option Template
 
 ```html
-<mer-select [options]="users" [(value)]="selectedUser">
+<mer-select [dataSource]="users" [(value)]="selectedUser">
   <ng-template merSelectOptionDef let-option>
     <div class="custom-option">
       <img *ngIf="option.avatar" [src]="option.avatar" class="avatar">
@@ -296,7 +295,7 @@ import { provideMerMaterialIntegration } from '@merelis/angular-material';
     <mat-form-field appearance="outline">
       <mat-label>Select a user</mat-label>
       <mer-select
-        [options]="users"
+        [dataSource]="users"
         [(value)]="selectedUser"
         [displayWith]="displayUserName"
         [compareWith]="compareUsers">
@@ -333,7 +332,7 @@ The `MerSelectComponent` internally uses the `MerProgressBar` to display a loadi
 
 ```html
 <mer-select
-  [options]="dataItems"
+  [dataSource]="dataItems"
   [(value)]="selectedItem"
   [loading]="isLoadingData">
 </mer-select>

@@ -260,8 +260,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     readonly autoActiveFirstOption = input(true, {transform: booleanAttribute});
     readonly debounceTime = input(100, {transform: numberAttribute});
     readonly panelOffsetY = input(0, {transform: numberAttribute});
-    readonly options = input<T[]>();
-    readonly dataSource = input<SelectDataSource<T>>();
+    readonly dataSource = input<SelectDataSource<T> | T[]>();
     readonly compareWith = input<Comparable<T>>();
     readonly displayWith = input<DisplayWith<T>>();
     readonly filterPredicate = input<FilterPredicate<T>>();
@@ -515,21 +514,21 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
 
     constructor() {
         effect(() => {
-            this.previousDataSource?.disconnect(this);
             const ds = this.dataSource();
-            this.previousDataSource = ds;
-            if (ds) {
+            if (Array.isArray(ds) || isNotPresent(ds)) {
+                const options = ds as T[];
+                if (this.internalDataSource) {
+                    this.internalDataSource.data = options ?? [];
+                } else {
+                    this.createInternalDs(options);
+                }
+            } else {
+                this.previousDataSource?.disconnect(this);
+                this.previousDataSource = ds;
+                this.internalDataSource?.disconnect(this);
                 this.internalDataSource?.dispose();
                 this.internalDataSource = undefined;
-                this.connectDataSource(ds);
-            } else if (!this.internalDataSource) {
-                this.createDs();
-            }
-        });
-        effect(() => {
-            const options = this.options();
-            if (this.internalDataSource) {
-                this.internalDataSource.data = options ?? [];
+                this.connectDataSource(ds as SelectDataSource<T>);
             }
         });
         effect(() => {
@@ -538,9 +537,6 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     }
 
     ngOnInit(): void {
-        if (!this.dataSource()) {
-            this.createDs();
-        }
         this.subscribeToInputChanges();
         this.renderedOptions$.subscribe(options => {
             options?.forEach(opt => {
@@ -568,7 +564,10 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
 
     ngOnDestroy(): void {
         this.unsubscribeDataSource();
-        this.dataSource()?.disconnect(this);
+        const ds = this.dataSource();
+        if (!Array.isArray(ds)){
+            ds?.disconnect(this);
+        }
         this.internalDataSource?.dispose();
         this.subSelectionChanges?.unsubscribe();
         this._activeOptionChanges.unsubscribe();
@@ -656,9 +655,9 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
         this._stateChanges.next();
     }
 
-    protected createDs(): void {
+    protected createInternalDs(options: T[]): void {
         this.internalDataSource?.dispose();
-        this.internalDataSource = new MerSelectDataSource<T>(this.options(), {
+        this.internalDataSource = new MerSelectDataSource<T>(options ?? [], {
             alwaysIncludesSelected: this.alwaysIncludesSelected(),
             compareWith: this.compareWith(),
             displayWith: this.displayWith(),
@@ -693,7 +692,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
             fromEvent(this._document, 'auxclick') as Observable<MouseEvent>,
             fromEvent(this._document, 'touchend') as Observable<TouchEvent>,
         ).pipe(
-            filter(event => {
+            filter((event: Event) => {
                 // If we're in the Shadow DOM, the event target will be the shadow root, so we have to
                 // fall back to check the first element in the path of the click event.
                 const clickTarget = _getEventTarget<HTMLElement>(event)!;
@@ -1281,7 +1280,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
             return this.connectedTo()!.elementRef;
         }
 
-        return this.elemnentRef;
+        return this.elemnentRef as any;
     }
 
     protected isOptionDisabled(opt: T): boolean {
