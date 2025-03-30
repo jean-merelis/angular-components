@@ -14,8 +14,8 @@ import {
     Renderer2
 } from "@angular/core";
 import { ControlValueAccessor, FormControl, NG_VALIDATORS, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { ValueValidators } from "../../../angular/utils";
-import { isBlank, isNotPresent, isPresent, noop } from "../../../utils";
+import { ValueValidators } from "@merelis/angular/utils";
+import { isBlank, isNotPresent, isPresent, noop } from "@merelis/utils";
 
 
 function getNumberSeparators(locale?: string) {

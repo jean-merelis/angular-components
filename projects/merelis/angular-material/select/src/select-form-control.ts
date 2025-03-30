@@ -15,7 +15,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormControl, FormGroupDirective, NgControl, NgForm } from "@angular/forms";
 import { ErrorStateMatcher } from "@angular/material/core";
 import { MAT_FORM_FIELD, MatFormFieldControl } from "@angular/material/form-field";
-import { MerSelectComponent } from "../../../angular/select";
+import { MerSelectComponent } from "@merelis/angular/select";
 import { Observable, Subject } from "rxjs";
 
 

@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { AbstractControl, ValidationErrors } from "@angular/forms";
-import { ValidationUtils } from "../../../angular/utils";
+import { ValidationUtils } from "@merelis/angular/utils";
 
 @Pipe({
     name: 'singleErrorMessage',

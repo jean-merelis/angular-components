@@ -47,7 +47,8 @@ import {
     contentChild,
     contentChildren,
     DestroyRef,
-    Directive, effect,
+    Directive,
+    effect,
     ElementRef,
     EventEmitter,
     forwardRef,
@@ -58,13 +59,11 @@ import {
     model,
     NgZone,
     numberAttribute,
-    OnChanges,
     OnDestroy,
     OnInit,
     output,
     Renderer2,
     signal,
-    SimpleChanges,
     TemplateRef,
     viewChild,
     viewChildren,
@@ -73,8 +72,8 @@ import {
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
 import { ControlValueAccessor, FormGroupDirective, NG_VALUE_ACCESSOR } from "@angular/forms";
-import { MerProgressBar } from "../../../angular/progress-bar";
-import { isNotPresent, noop } from "../../../utils";
+import { MerProgressBar } from "@merelis/angular/progress-bar";
+import { isNotPresent, noop } from "@merelis/utils";
 import {
     BehaviorSubject,
     debounceTime,
@@ -300,7 +299,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     protected readonly elemnentRef = inject(ElementRef);
     protected readonly cd = inject(ChangeDetectorRef);
     protected readonly renderer = inject(Renderer2);
-    protected readonly destroyRef: DestroyRef  = inject(DestroyRef);
+    protected readonly destroyRef: DestroyRef = inject(DestroyRef);
     protected readonly _overlay = inject(Overlay);
     protected readonly _viewContainerRef = inject(ViewContainerRef);
     protected readonly zone = inject(NgZone);
@@ -529,7 +528,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
         });
         effect(() => {
             const options = this.options();
-            if (this.internalDataSource){
+            if (this.internalDataSource) {
                 this.internalDataSource.data = options ?? [];
             }
         });

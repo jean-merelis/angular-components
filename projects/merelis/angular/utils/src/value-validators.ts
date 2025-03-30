@@ -1,6 +1,6 @@
 import { ValidationErrors } from "@angular/forms";
 import { isString } from "lodash-es";
-import { isBlank } from "../../../utils";
+import { isBlank } from "@merelis/utils";
 import { ValueValidatorFn } from "./value-validator";
 
 

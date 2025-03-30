@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { MerOption, MerOptionGroup } from "@merelis/angular/select/option";
+import { MerOption, MerOptionGroup } from "./option";
 import { MerSelectComponent, MerSelectOptionDef, MerSelectPanelOrigin, MerSelectTriggerDef } from "./select";
 
 @NgModule({
