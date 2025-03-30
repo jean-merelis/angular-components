@@ -27,7 +27,15 @@ A progress bar component that can be used independently or integrated with other
 
 ### Initial Setup
 
-Since these are standalone components, you can import them directly in your components or in your `app.config.ts` file (for applications using the new Angular 17+ configuration approach):
+After installing the package, you need to import the necessary styles in your application's `styles.scss` file:
+
+```scss
+@use '@angular/cdk/overlay-prebuilt.css';
+@use '@merelis/angular/select/styles';
+```
+This will import both the CDK overlay styles (required for the dropdown functionality) and the component-specific styles.
+
+Since these are standalone components, you can import them directly in your components:
 
 #### Direct import in a component
 

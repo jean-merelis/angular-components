@@ -8,11 +8,6 @@
         "./select/styles/_index.scss",
         "./select/styles/mer-select.scss",
         "./select/styles/_select.scss",
-        "./select/styles/_option.scss",
-
-        "./table/styles/_index.scss",
-        "./table/styles/table.scss",
-        "./table/styles/_validation-indicator.scss",
-        "./table/styles/_sort-header.scss"
+        "./select/styles/_option.scss"
     ]
 }
