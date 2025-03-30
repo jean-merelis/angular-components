@@ -1,4 +1,17 @@
 
+<div>
+  Typeahead example:
+</div>
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
+    <mat-form-field>
+        <mat-label>Person</mat-label>
+        <mer-select merSelectFormField [dataSource]="personDS" [displayWith]="displayPersonWith">
+        </mer-select>
+    </mat-form-field>
+
+</div>
+
+
 <div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
     <mat-form-field>
         <mat-label>Colors</mat-label>

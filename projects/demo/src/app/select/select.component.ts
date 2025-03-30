@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from "@angular/core";
+import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, Validators } from "@angular/forms";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { faker } from "@faker-js/faker";
 import { MerSelectFormFieldControl } from "../../../../merelis/angular-material/select";
-import { MerSelectComponent } from "../../../../merelis/angular/select";
+import { MerSelectComponent, MerSelectOptionDef } from "../../../../merelis/angular/select";
+import { PersonDataSource, PersonService } from "./typeahead.datasource";
 
 @Component({
     selector: "select-page",
@@ -17,7 +18,8 @@ import { MerSelectComponent } from "../../../../merelis/angular/select";
         MerSelectComponent,
         MerSelectFormFieldControl,
         FormsModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        MerSelectOptionDef
     ]
 })
 export class SelectComponent {
@@ -27,6 +29,8 @@ export class SelectComponent {
     matform1 = new UntypedFormControl(null, Validators.required)
     matform2 = new UntypedFormControl(null, Validators.required)
     form = new UntypedFormControl('Blue', Validators.required)
+
+    personDS = new PersonDataSource(inject(PersonService));
 
     ngOnInit(): void {
         const colors = new Set<string>();

@@ -171,6 +171,132 @@ export class ExampleComponent {
 }
 ```
 
+
+## Typeahead Functionality with Custom DataSource
+
+The `MerSelectComponent` supports typeahead functionality, allowing you to search for options as you type. You can implement this by creating a custom `SelectDataSource` that fetches filtered data based on user input.
+
+### Creating a Custom DataSource
+
+A custom data source gives you complete control over how options are loaded and filtered. This is particularly useful for:
+
+- Loading data from an API
+- Implementing server-side filtering
+- Adding debounce and loading states
+- Supporting large datasets without performance issues
+
+### Example: PersonDataSource
+
+Here's an example of a custom data source that fetches person data based on user input:
+
+```typescript
+interface Person {
+    name: string;
+}
+
+@Injectable({providedIn: "root"})
+export class PersonService {
+    // Simulates an HTTP call to an API
+    async search(query: string): Promise<Person[]> {
+        return new Promise<Person[]>((resolve) => {
+            setTimeout(() => {
+                // In a real application, this would be an API call
+                const filtered = DATASET.filter(person => 
+                    person.name.toLowerCase().startsWith(query.toLowerCase())
+                );
+                resolve(filtered);
+            }, 500)
+        })
+    }
+}
+
+export class PersonDataSource implements SelectDataSource<Person> {
+    private service: PersonService;
+    private viewerSubscription?: Subscription;
+    private data = new BehaviorSubject<Person[]>([]);
+    private loading$ = new BehaviorSubject<boolean>(false);
+
+    constructor(service: PersonService) {
+        this.service = service;
+    }
+
+    // Called when the component connects to this data source
+    connect(collectionViewer: CollectionViewer<Person>): Observable<Person[]> {
+        this.viewerSubscription = collectionViewer.viewChange.subscribe(async vc => {
+            if (vc.text) {
+                this.loading$.next(true);
+                try {
+                    const result = await this.service.search(vc.text);
+                    this.data.next(result);
+                } finally {
+                    this.loading$.next(false);
+                }
+            }
+        })
+        return this.data.asObservable();
+    }
+
+    // Called when the component disconnects from this data source
+    disconnect(collectionViewer: CollectionViewer<Person>): void {
+        this.viewerSubscription?.unsubscribe();
+        this.loading$.complete();
+        this.data.complete();
+    }
+
+    // Provides loading state to the component
+    loading(collectionViewer: CollectionViewer<Person>): Observable<boolean> {
+        return this.loading$.asObservable();
+    }
+}
+```
+
+### Using the Custom DataSource
+
+Here's how to use your custom data source with the `MerSelectComponent`:
+
+```typescript
+@Component({
+  selector: 'app-typeahead-example',
+  template: `
+    <mer-select
+      [(value)]="selectedPerson"
+      [dataSource]="personDataSource"
+      [displayWith]="displayPersonName"
+      [placeholder]="'Search for a person...'"
+      [debounceTime]="300">
+    </mer-select>
+    <p *ngIf="selectedPerson">Selected: {{selectedPerson.name}}</p>
+  `
+})
+export class TypeaheadExampleComponent implements OnInit {
+  selectedPerson: Person | null = null;
+  personDataSource: PersonDataSource;
+  
+  constructor(private personService: PersonService) {
+    this.personDataSource = new PersonDataSource(this.personService);
+  }
+  
+  displayPersonName(person: Person): string {
+    return person?.name || '';
+  }
+}
+```
+
+### How It Works
+
+1. **User Types**: When the user types in the select input, the component emits the text via `viewChange` observable.
+
+2. **DataSource Reacts**: Your custom data source receives the text and performs a search operation.
+
+3. **Loading State**: While searching, the data source emits a `true` loading state, which the component displays as a progress bar.
+
+4. **Results Update**: Once the search completes, the data source emits the filtered results, and the component updates the dropdown.
+
+5. **Loading Completes**: The data source emits a `false` loading state, and the progress bar disappears.
+
+This pattern allows for efficient typeahead functionality, even with large datasets or when fetching data from remote APIs.
+
+
 ### MerProgressBar
 
 The `MerProgressBar` component displays a visual progress bar, useful for indicating the progress of operations.
