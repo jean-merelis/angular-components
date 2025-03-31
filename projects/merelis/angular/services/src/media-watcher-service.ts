@@ -1,5 +1,6 @@
 import { BreakpointObserver, BreakpointState } from "@angular/cdk/layout";
 import { inject, Injectable, InjectionToken } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
 import { fromPairs } from "lodash-es";
 import { map, Observable, ReplaySubject } from "rxjs";
 
@@ -35,12 +36,15 @@ export class MerMediaWatcher {
     private mediaChanged = new ReplaySubject<MerMediaWatcherChange>(1);
     private queryToAliasMap = new Map<string, string>();
 
+    readonly isSmallScreen = toSignal(this.mediaChanged
+        .pipe(map(({matchingAliases}) => !matchingAliases.includes("md"))));
+
     constructor() {
-        const screens = fromPairs(Object.entries(this.config.breakpoints).map(([alias, screenSize]) => ([alias, `(min-width: ${screenSize})`])));
-        Object.entries(screens).forEach(([alias, query]) => {
+        const breakpoints = fromPairs(Object.entries(this.config.breakpoints).map(([alias, screenSize]) => ([alias, `(min-width: ${screenSize})`])));
+        Object.entries(breakpoints).forEach(([alias, query]) => {
             this.queryToAliasMap.set(query, alias);
         });
-        this.breakpointObserver.observe(Object.values(screens) as string[])
+        this.breakpointObserver.observe(Object.values(breakpoints) as string[])
             .pipe(
                 map((state) => {
                     const matchingAliases: string[] = [];

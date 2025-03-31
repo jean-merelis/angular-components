@@ -248,6 +248,7 @@ export class MerSelectOptionDef {
 })
 export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueAccessor, OnInit, OnDestroy, AfterViewInit {
 
+    readonly dataSource = input<SelectDataSource<T> | T[]>();
     readonly value = model<T | T[] | null | undefined>();
     readonly loading = model<boolean>(false);
     readonly disabled = model(false);
@@ -260,7 +261,6 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     readonly autoActiveFirstOption = input(true, {transform: booleanAttribute});
     readonly debounceTime = input(100, {transform: numberAttribute});
     readonly panelOffsetY = input(0, {transform: numberAttribute});
-    readonly dataSource = input<SelectDataSource<T> | T[]>();
     readonly compareWith = input<Comparable<T>>();
     readonly displayWith = input<DisplayWith<T>>();
     readonly filterPredicate = input<FilterPredicate<T>>();
