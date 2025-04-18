@@ -1,11 +1,11 @@
 
 <div>
-  Typeahead example:
+    Typeahead example:
 </div>
 <div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
-    <mat-form-field>
+    <mat-form-field  floatLabel="always">
         <mat-label>Person</mat-label>
-        <mer-select merSelectFormField [dataSource]="personDS" [displayWith]="displayPersonWith">
+        <mer-select merSelectFormField [dataSource]="personDS" [displayWith]="displayPersonWith" placeholder="Select a person">
         </mer-select>
     </mat-form-field>
 
@@ -15,7 +15,7 @@
 <div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
     <mat-form-field>
         <mat-label>Colors</mat-label>
-        <mer-select merSelectFormField [dataSource]="colors"></mer-select>
+        <mer-select merSelectFormField [dataSource]="colors"  placeholder="Select a color"></mer-select>
     </mat-form-field>
 
     <mat-form-field>
@@ -30,11 +30,13 @@
         <mer-select merSelectFormField [dataSource]="colors" [value]="'Blue'" [disabled]="true"></mer-select>
     </mat-form-field>
 
-    <mat-form-field>
+    <mat-form-field floatLabel="always">
         <mat-label>Person</mat-label>
         <mer-select merSelectFormField [dataSource]="data" [displayWith]="displayPersonWith" [value]="{name: 'Nobody'}" [disabled]="true"></mer-select>
     </mat-form-field>
 </div>
+
+
 
 <div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
     <mat-form-field>

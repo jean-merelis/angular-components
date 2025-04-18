@@ -2,7 +2,6 @@
 
 A library of reusable Angular components and utilities that provides high-quality UI elements for your applications.
 
-[![npm version](https://badge.fury.io/js/@merelis%2Fangular.svg)](https://badge.fury.io/js/@merelis%2Fangular)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Installation

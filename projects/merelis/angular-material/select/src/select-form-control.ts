@@ -3,7 +3,7 @@ import {
     AfterViewInit,
     booleanAttribute,
     DestroyRef,
-    Directive,
+    Directive, EnvironmentInjector,
     inject,
     Injector,
     input,
@@ -32,9 +32,10 @@ export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnI
     protected parentFormGroup = inject(FormGroupDirective, {optional: true});
     protected parentForm = inject(NgForm, {optional: true});
     protected defaultErrorStateMatcher = inject(ErrorStateMatcher);
-    protected injector = inject(Injector);
+    protected injector = inject(EnvironmentInjector);
 
     ngOnInit() {
+        this.select._floatLabel = this.matFormField.floatLabel === 'always';
         this.select.inMatFormField = true;
         this.select.stateChanges
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -78,10 +79,12 @@ export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnI
         return this.select.id;
     }
 
+    @Input() placeholder: string = '';
+
     /** The placeholder for this control. */
-    get placeholder(): string {
-        return this.select.placeholder() ?? "";
-    }
+    // get placeholder(): string {
+    //     return this.select.placeholder() ?? "";
+    // }
 
     /** Gets the AbstractControlDirective for this control. */
     readonly ngControl = inject(NgControl, {optional: true});
@@ -98,7 +101,7 @@ export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnI
 
     /** Whether the `MatFormField` label should try to float. */
     get shouldLabelFloat(): boolean {
-        return this.focused || !this.empty;
+        return this.select.isOpen || !this.empty || (this.focused && !!this.placeholder);
     }
 
     /** Whether the control is required. */
@@ -161,5 +164,38 @@ export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnI
             this._stateChanges.next();
         }
     }
+
+    // ngDoCheck() {
+    //     if (this.ngControl) {
+    //         // We need to re-evaluate this on every change detection cycle, because there are some
+    //         // error triggers that we can't subscribe to (e.g. parent form submissions). This means
+    //         // that whatever logic is in here has to be super lean or we risk destroying the performance.
+    //         this.updateErrorState();
+    //
+    //     }
+    //
+    //     // We need to dirty-check and set the placeholder attribute ourselves, because whether it's
+    //     // present or not depends on a query which is prone to "changed after checked" errors.
+    //     this._dirtyCheckPlaceholder();
+    // }
+    //
+    //
+    // private _previousPlaceholder?: string | null;
+    // /** Does some manual dirty checking on the native input `placeholder` attribute. */
+    // private _dirtyCheckPlaceholder() {
+    //     const placeholder = this._getPlaceholder();
+    //     if (placeholder !== this._previousPlaceholder) {
+    //         this.select.placeholder.set(placeholder);
+    //         this._previousPlaceholder = placeholder;
+    //         // placeholder
+    //         //     ? element.setAttribute('placeholder', placeholder)
+    //         //     : element.removeAttribute('placeholder');
+    //     }
+    // }
+    //
+    // /** Gets the current placeholder of the form field. */
+    // protected _getPlaceholder(): string | null {
+    //     return this.placeholder || null;
+    // }
 
 }

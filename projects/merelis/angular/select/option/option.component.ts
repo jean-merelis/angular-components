@@ -87,7 +87,7 @@ export class MerOption<T = any> implements FocusableOption, AfterViewChecked, On
     /** The unique ID of the option. */
     @Input() id = `mat-option-${_uniqueIdCounter++}`;
 
-
+    private _disabled = false;
     /** Whether the option is disabled. */
     @Input({transform: booleanAttribute})
     get disabled(): boolean {
@@ -98,7 +98,7 @@ export class MerOption<T = any> implements FocusableOption, AfterViewChecked, On
         this._disabled = value;
     }
 
-    private _disabled = false;
+
 
     /** Event emitted when the option is selected or deselected. */
         // tslint:disable-next-line:no-output-on-prefix

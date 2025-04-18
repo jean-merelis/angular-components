@@ -3,7 +3,7 @@ import { FormsModule, ReactiveFormsModule, UntypedFormControl, Validators } from
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { faker } from "@faker-js/faker";
 import { MerSelectFormFieldControl } from "../../../../merelis/angular-material/select";
-import { MerSelectComponent, MerSelectOptionDef } from "../../../../merelis/angular/select";
+import { MerOption, MerSelectComponent, MerSelectOptionDef } from "../../../../merelis/angular/select";
 import { PersonDataSource, PersonService } from "./typeahead.datasource";
 
 @Component({
@@ -19,7 +19,6 @@ import { PersonDataSource, PersonService } from "./typeahead.datasource";
         MerSelectFormFieldControl,
         FormsModule,
         ReactiveFormsModule,
-        MerSelectOptionDef
     ]
 })
 export class SelectComponent {

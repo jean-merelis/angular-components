@@ -33,7 +33,7 @@ import {
     ScrollStrategy,
     ViewportRuler
 } from "@angular/cdk/overlay";
-import { _getEventTarget } from "@angular/cdk/platform";
+import { _getEventTarget, _getFocusedElementPierceShadowDom } from "@angular/cdk/platform";
 import { TemplatePortal } from "@angular/cdk/portal";
 import { CommonModule, DOCUMENT } from "@angular/common";
 import {
@@ -49,7 +49,7 @@ import {
     DestroyRef,
     Directive,
     effect,
-    ElementRef,
+    ElementRef, EnvironmentInjector,
     EventEmitter,
     forwardRef,
     inject,
@@ -71,7 +71,7 @@ import {
     ViewEncapsulation
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { ControlValueAccessor, FormGroupDirective, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { ControlValueAccessor, FormControl, FormGroupDirective, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MerProgressBar } from "@merelis/angular/progress-bar";
 import { isNotPresent, noop } from "@merelis/utils";
 import {
@@ -270,7 +270,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     readonly panelClass = input<string | string[]>();
     readonly panelWidth = input<string | number>();
     readonly position = input<'auto' | 'above' | 'below'>('auto');
-    readonly placeholder = input<string>();
+    readonly placeholder = model<string | null | undefined>();
 
 
     readonly opened = output<void>();
@@ -292,6 +292,14 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     get panelOpen(): boolean {
         return this._overlayAttached && this.showPanel;
     }
+    get _floatLabel(){
+        return this.__floatLabel;
+    }
+    set _floatLabel(b: boolean){
+        this.__floatLabel = b;
+        this.cd.markForCheck();
+    }
+    private __floatLabel: boolean = true;
 
     protected readonly filteredOptions = signal<T[]>([]);
 
@@ -302,7 +310,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     protected readonly _overlay = inject(Overlay);
     protected readonly _viewContainerRef = inject(ViewContainerRef);
     protected readonly zone = inject(NgZone);
-    protected readonly _injector = inject(Injector);
+    protected readonly _environmentInjector = inject(EnvironmentInjector);
     protected readonly _viewportRuler = inject(ViewportRuler);
     protected readonly _scrollStrategy = inject<() => ScrollStrategy>(MER_SELECT_SCROLL_STRATEGY);
     protected readonly _document = inject<any>(DOCUMENT, {optional: true});
@@ -385,15 +393,16 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
 
 
     protected checkFocus(): void {
-        afterNextRender(() => {
-            this._focused = this._document.activeElement === this.input().nativeElement;
+        afterNextRender({read: () => {
+            this._focused = this._hasFocus();
             if (this._focused) {
                 this.onFocus.emit();
             } else {
                 this.onBlur.emit()
             }
             this._stateChanges.next();
-        }, {injector: this._injector});
+            this.cd.markForCheck();
+        }}, {injector: this._environmentInjector});
     }
 
     /**
@@ -480,6 +489,11 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     /** The subscription for closing actions (some are bound to document). */
     private _closingActionsSubscription?: Subscription;
 
+    /** Whether the input currently has focus. */
+    private _hasFocus(): boolean {
+        return _getFocusedElementPierceShadowDom() === this.input().nativeElement;
+    }
+
     //// panel
 
     /** Whether the autocomplete panel should be visible, depending on option length. */
@@ -499,7 +513,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
 
     //// < panel
 
-
+    private _cleanupWindowBlur: (() => void) | undefined;
     protected subSelectionChanges?: Subscription;
 
     protected subscribeToSelectionChange(selection: SelectionModel<T>): void {
@@ -563,6 +577,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     }
 
     ngOnDestroy(): void {
+        this._cleanupWindowBlur?.();
         this.unsubscribeDataSource();
         const ds = this.dataSource();
         if (!Array.isArray(ds)){
@@ -613,7 +628,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
         const window = this._getWindow();
 
         if (typeof window !== 'undefined') {
-            this.zone.runOutsideAngular(() => window.addEventListener('blur', this._windowBlurHandler));
+            this._cleanupWindowBlur = this.renderer.listen('window', 'blur', this._windowBlurHandler);
         }
         this.parentFormGroup?.ngSubmit
             .pipe(takeUntilDestroyed(this.destroyRef))
@@ -624,7 +639,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     }
 
     ngAfterContentInit() {
-        this._keyManager = new ActiveDescendantKeyManager<MerOption<T>>(this.renderedOptions, this._injector)
+        this._keyManager = new ActiveDescendantKeyManager<MerOption<T>>(this.renderedOptions, this._environmentInjector)
             .withWrap()
             .skipPredicate(this._skipPredicate);
         this._activeOptionChanges = this._keyManager.change.subscribe(index => {
@@ -632,7 +647,6 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
                 // TODO:  this.optionActivated.emit({source: this, option: this.options.toArray()[index] || null});
             }
         });
-
         // Set the initial visibility state.
         this._setVisibility();
     }
@@ -672,6 +686,10 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
         this.cd.markForCheck();
     }
 
+    get shouldLabelFloat(): boolean {
+        return this._floatLabel || this.isOpen || !this.empty || (this.focused && !!this.placeholder);
+    }
+
 
     /**
      * Event handler for when the window is blurred. Needs to be an
@@ -681,8 +699,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
         // If the user blurred the window while the autocomplete is focused, it means that it'll be
         // refocused when they come back. In this case we want to skip the first focus event, if the
         // pane was closed, in order to avoid reopening it unintentionally.
-        this._canOpenOnNextFocus =
-            this._document.activeElement !== this.input().nativeElement || this.panelOpen;
+        this._canOpenOnNextFocus = this.panelOpen || !this._hasFocus();
     };
 
     /** Stream of clicks outside of the panel. */
@@ -705,7 +722,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
                     // true. Its main purpose is to handle the case where the input is focused from an
                     // outside click which propagates up to the `body` listener within the same sequence
                     // and causes the panel to close immediately (see #3106).
-                    this._document.activeElement !== this.input().nativeElement &&
+                    !this._hasFocus() &&
                     (!customOrigin || !customOrigin.contains(clickTarget)) &&
                     !!this._overlayRef &&
                     !this._overlayRef.overlayElement.contains(clickTarget)
@@ -713,6 +730,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
             }),
         );
     }
+
 
     // `skipPredicate` determines if key manager should avoid putting a given option in the tab
     // order. Allow disabled list items to receive focus via keyboard to align with WAI ARIA
@@ -870,7 +888,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
             this._clearPreviousSelectedOption(null, false);
         }
 
-        if (this._canOpen() && this._document.activeElement === event.target) {
+        if (this._canOpen() &&  this._hasFocus()) {
             // When the `input` event fires, the input's value will have already changed. This means
             // that if we take the `this._element.nativeElement.value` directly, it'll be one keystroke
             // behind. This can be a problem when the user selects a value, changes a character while
@@ -899,8 +917,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
 
     protected _handleClick(event: MouseEvent): void {
         if (this._canOpen() && !this.panelOpen) {
-            event.stopPropagation();
-            this._openPanelInternal();
+             this._openPanelInternal();
         }
     }
 
@@ -944,7 +961,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
                     subscriber.next(undefined);
                     subscriber.complete();
                 },
-                {injector: this._injector},
+                {injector: this._environmentInjector},
             );
         });
         const optionChanges = this.renderedOptions$.pipe(

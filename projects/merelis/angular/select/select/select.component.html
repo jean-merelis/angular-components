@@ -16,7 +16,7 @@
 <input #textinput class="mer-select-input" style="outline: none"
        [readonly]="readOnly() || disableSearch()"
        [disabled]="disabled()"
-       [placeholder]="(empty && _focused && placeholder()) ? placeholder() : ''"
+       [placeholder]="(empty && placeholder() && shouldLabelFloat) ? placeholder() : ''"
        (focusin)="_handleFocus()"
        (blur)="_handleBlur()"
        (keydown)="_handleKeydown($event)"
@@ -58,7 +58,6 @@
                 </ng-container>
             </mer-option>
         }
-        <ng-content select="mer-option, mer-option-group, ng-container"></ng-content>
     </div>
 
 </ng-template>
