@@ -97,7 +97,7 @@ import {
 } from "../option";
 
 import { Comparable, DisplayWith, FilterPredicate, OptionPredicate } from "../types";
-import { CollectionViewer, MerSelectDataSource, SelectDataSource, ViewerChange } from "./select.datasource";
+import { MerSelectDataSource, SelectDataSource, FilterCriteria } from "./select.datasource";
 
 declare var ngDevMode: boolean;
 
@@ -127,14 +127,14 @@ export const MER_SELECT_SCROLL_STRATEGY = new InjectionToken<() => ScrollStrateg
         providedIn: 'root',
         factory: () => {
             const overlay = inject(Overlay);
-            return () => overlay.scrollStrategies.reposition();
+            return () => overlay.scrollStrategies.close();
         },
     },
 );
 
 /** @docs-private */
 export function MER_SELECT_SCROLL_STRATEGY_FACTORY(overlay: Overlay): () => ScrollStrategy {
-    return () => overlay.scrollStrategies.reposition();
+    return () => overlay.scrollStrategies.close();
 }
 
 /** @docs-private */
@@ -246,7 +246,7 @@ export class MerSelectOptionDef {
         "[class.disabled]": "disabled()"
     }
 })
-export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueAccessor, OnInit, OnDestroy, AfterViewInit {
+export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit {
 
     readonly dataSource = input<SelectDataSource<T> | T[]>();
     readonly value = model<T | T[] | null | undefined>();
@@ -283,10 +283,6 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     protected _stateChanges = new Subject<void>();
     get stateChanges(): Observable<void> {
         return this._stateChanges.asObservable();
-    }
-
-    get viewChange(): Observable<ViewerChange<T>> {
-        return this._viewChange.asObservable();
     }
 
     get panelOpen(): boolean {
@@ -353,6 +349,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     protected readonly renderedOptions$ = toObservable(this.renderedOptions);
     protected readonly panelTemplate = viewChild.required<string, TemplateRef<any>>("panelTmpl", {read: TemplateRef});
     protected internalDataSource?: MerSelectDataSource<T>;
+    protected _connectedDataSource?: SelectDataSource<T>;
     protected readonly _id: string = `${_uniqueIdCounter++}`;
     readonly id: string = `mer-select-${this._id}`;
     protected readonly panelId: string = `mer-select-panel-${this._id}`;
@@ -459,7 +456,6 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
         return;
     });
     protected _portal?: TemplatePortal;
-    protected _viewChange = new BehaviorSubject({});
     protected onChangeCallback = noop;
     protected onTouchedCallback = noop;
     protected _overlayAttached: boolean = false;
@@ -537,9 +533,9 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
                     this.createInternalDs(options);
                 }
             } else {
-                this.previousDataSource?.disconnect(this);
+                this.previousDataSource?.disconnect();
                 this.previousDataSource = ds;
-                this.internalDataSource?.disconnect(this);
+                this.internalDataSource?.disconnect();
                 this.internalDataSource?.dispose();
                 this.internalDataSource = undefined;
                 this.connectDataSource(ds as SelectDataSource<T>);
@@ -571,7 +567,7 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
             debounceTime(this.debounceTime()),
             distinctUntilChanged(),
         ).subscribe(value => {
-            this._viewChange.next({text: value, selected: this.value()});
+            this._connectedDataSource?.applyFilter({searchText: value, selected: this.value()});
             this.onInputChange.emit(value);
         })
     }
@@ -579,17 +575,13 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
     ngOnDestroy(): void {
         this._cleanupWindowBlur?.();
         this.unsubscribeDataSource();
-        const ds = this.dataSource();
-        if (!Array.isArray(ds)){
-            ds?.disconnect(this);
-        }
+        this._connectedDataSource?.disconnect();
         this.internalDataSource?.dispose();
         this.subSelectionChanges?.unsubscribe();
         this._activeOptionChanges.unsubscribe();
         this._keydownSubscription?.unsubscribe();
         this._outsideClickSubscription?.unsubscribe();
         this.inputSubscription?.unsubscribe();
-        this._viewChange.complete();
         this._keyManager?.destroy();
         this._animationDone?.complete();
         this.input$.complete();
@@ -611,11 +603,16 @@ export class MerSelectComponent<T> implements CollectionViewer<T>, ControlValueA
 
     protected connectDataSource(ds: SelectDataSource<T>): void {
         this.unsubscribeDataSource();
-        this.dataSourceConnectSubscription = ds.connect(this)
+        this.dataSourceConnectSubscription = ds.connect()
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(data => this.filteredOptions.set(data));
-        this.dataSourceLoadingSubscription = ds.loading(this)?.pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe(isLoading => this.loading.set(isLoading));
+        const loading$ = ds.loading();
+        if (loading$) {
+            this.dataSourceLoadingSubscription = loading$
+                .pipe(takeUntilDestroyed(this.destroyRef))
+                .subscribe(isLoading => this.loading.set(isLoading));
+        }
+        this._connectedDataSource = ds;
     }
 
     protected unsubscribeDataSource(): void {

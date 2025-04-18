@@ -1,7 +1,7 @@
-import { inject, Injectable } from "@angular/core";
+import { Injectable } from "@angular/core";
 import { faker } from "@faker-js/faker";
 import { BehaviorSubject, Observable, Subscription } from "rxjs";
-import { CollectionViewer, SelectDataSource } from "../../../../merelis/angular/select";
+import { FilterCriteria, SelectDataSource } from "../../../../merelis/angular/select";
 
 interface Person {
     name: string;
@@ -29,7 +29,6 @@ export class PersonService {
 }
 
 export class PersonDataSource implements SelectDataSource<Person> {
-
     private service: PersonService;
     private viewerSubscription?: Subscription;
     private data = new BehaviorSubject<Person[]>([]);
@@ -39,29 +38,30 @@ export class PersonDataSource implements SelectDataSource<Person> {
         this.service = service;
     }
 
-    connect(collectionViewer: CollectionViewer<Person>): Observable<Person[]> {
-        this.viewerSubscription = collectionViewer.viewChange.subscribe(async vc => {
-            if (vc.text) {
-                this.loading$.next(true);
-                try {
-                    const result = await this.service.search(vc.text);
-                    this.data.next(result);
-                } finally {
-                    this.loading$.next(false);
-                }
-            }
-        })
+    connect(): Observable<Person[]> {
         return this.data.asObservable();
     }
 
-    disconnect(collectionViewer: CollectionViewer<Person>): void {
+    disconnect(): void {
         this.viewerSubscription?.unsubscribe();
         this.loading$.complete();
         this.data.complete();
     }
 
-    loading(collectionViewer: CollectionViewer<Person>): Observable<boolean> {
+    loading(): Observable<boolean> {
         return this.loading$.asObservable();
     }
 
+    async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
+
+        if (criteria.searchText) {
+            this.loading$.next(true);
+            try {
+                const result = await this.service.search(criteria.searchText);
+                this.data.next(result);
+            } finally {
+                this.loading$.next(false);
+            }
+        }
+    }
 }

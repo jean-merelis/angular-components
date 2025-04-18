@@ -60,7 +60,6 @@ export class ExampleComponent {
 }
 ```
 
-
 ### MerSelectComponent
 
 The `MerSelectComponent` offers a robust alternative to the native HTML select, with additional features like filtering and typeahead.
@@ -77,36 +76,36 @@ The `MerSelectComponent` offers a robust alternative to the native HTML select, 
 
 #### Input Properties
 
-| Name | Type                                    | Default | Description                                                                            |
-|------|-----------------------------------------|--------|----------------------------------------------------------------------------------------|
-| dataSource | Array\<T\> &#124; SelectDataSource\<T\> | undefined | List of available options for selection or data source for the component   |
-| value | T \| T[] \| null                        | undefined | Currently selected value                                                               |
-| loading | boolean                                 | false | Displays loading indicator using MerProgressBar                                        |
-| disabled | boolean                                 | false | Disables the component                                                                 |
-| readOnly | boolean                                 | false | Sets the component as read-only                                                        |
-| disableSearch | boolean                                 | false | Disables text search functionality                                                     |
-| disableOpeningWhenFocusedByKeyboard | boolean                                 | false | Prevents the panel from opening automatically when focused via keyboard                |
-| multiple | boolean                                 | false | Allows multiple selection                                                              |
-| canClear | boolean                                 | true | Allows clearing the selection                                                          |
-| alwaysIncludesSelected | boolean                                 | false | Always includes the selected item in the dropdown, even if it doesn't match the filter |
-| autoActiveFirstOption | boolean                                 | true | Automatically activates the first option when the panel is opened                      |
-| debounceTime | number                                  | 100 | Debounce time for text input (in ms)                                                   |
-| panelOffsetY | number                                  | 0 | Vertical offset of the options panel                                                   |
-| compareWith | Comparable\<T\>                         | undefined | Function to compare values                                                             |
-| displayWith | DisplayWith\<T\>                        | undefined | Function to display values as text                                                     |
-| filterPredicate | FilterPredicate\<T\>                    | undefined | Function to filter options based on typed text                                         |
-| disableOptionPredicate | OptionPredicate\<T\>                    | () => false | Function to determine which options should be disabled                                 |
-| disabledOptions | T[]                                     | [] | List of options that should be disabled                                                |
-| connectedTo | MerSelectPanelOrigin                    | undefined | Element to which the panel should connect                                              |
-| panelClass | string \| string[]                      | undefined | CSS class(es) applied to the options panel                                             |
-| panelWidth | string \| number                        | undefined | Width of the options panel                                                             |
-| position | 'auto' \| 'above' \| 'below'            | 'auto' | Position of the panel relative to the input                                            |
-| placeholder | string                                  | undefined | Text to display when no item is selected                                               |
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| dataSource | Array\<T\> &#124; SelectDataSource\<T\> | undefined | List of available options for selection or data source for the component |
+| value | T \| T[] \| null | undefined | Currently selected value |
+| loading | boolean | false | Displays loading indicator using MerProgressBar |
+| disabled | boolean | false | Disables the component |
+| readOnly | boolean | false | Sets the component as read-only |
+| disableSearch | boolean | false | Disables text search functionality |
+| disableOpeningWhenFocusedByKeyboard | boolean | false | Prevents the panel from opening automatically when focused via keyboard |
+| multiple | boolean | false | Allows multiple selection |
+| canClear | boolean | true | Allows clearing the selection |
+| alwaysIncludesSelected | boolean | false | Always includes the selected item in the dropdown, even if it doesn't match the filter. **Note: Only effective when using an array as dataSource, not when using a custom SelectDataSource.** |
+| autoActiveFirstOption | boolean | true | Automatically activates the first option when the panel is opened |
+| debounceTime | number | 100 | Debounce time for text input (in ms) |
+| panelOffsetY | number | 0 | Vertical offset of the options panel |
+| compareWith | Comparable\<T\> | undefined | Function to compare values |
+| displayWith | DisplayWith\<T\> | undefined | Function to display values as text |
+| filterPredicate | FilterPredicate\<T\> | undefined | Function to filter options based on typed text. **Note: Only effective when using an array as dataSource, not when using a custom SelectDataSource.** |
+| disableOptionPredicate | OptionPredicate\<T\> | () => false | Function to determine which options should be disabled |
+| disabledOptions | T[] | [] | List of options that should be disabled |
+| connectedTo | MerSelectPanelOrigin | undefined | Element to which the panel should connect |
+| panelClass | string \| string[] | undefined | CSS class(es) applied to the options panel |
+| panelWidth | string \| number | undefined | Width of the options panel |
+| position | 'auto' \| 'above' \| 'below' | 'auto' | Position of the panel relative to the input |
+| placeholder | string | undefined | Text to display when no item is selected |
 
 #### Output Events
 
 | Name | Description |
-|------|-----------|
+|------|-------------|
 | opened | Emitted when the options panel is opened |
 | closed | Emitted when the options panel is closed |
 | focus | Emitted when the component receives focus |
@@ -170,6 +169,109 @@ export class ExampleComponent {
 }
 ```
 
+## Filtering Behavior and DataSource
+
+The `MerSelectComponent` supports two operation modes for data filtering:
+
+### 1. Automatic Filtering (Array as dataSource)
+
+When you provide an array as `dataSource`, the component performs automatic filtering based on the typed text. In this case, the following inputs control the filtering behavior:
+
+| Name | Type | Description |
+|------|------|-------------|
+| filterPredicate | FilterPredicate\<T\> | Custom function to filter options based on typed text. **Only applied when the dataSource is an array, not a custom SelectDataSource.** |
+| alwaysIncludesSelected | boolean | When true, always includes the selected item(s) in the dropdown, even if they don't match the filter. **Only applied when the dataSource is an array, not a custom SelectDataSource.** |
+
+### 2. Custom Filtering (SelectDataSource)
+
+When you implement and provide a custom `SelectDataSource`, the filtering behavior is determined by the implementation of the dataSource's `applyFilter` method. In this case:
+
+- The component invokes the `applyFilter` method when the user types
+- The `filterPredicate` and `alwaysIncludesSelected` inputs are ignored
+- The filtering logic is entirely controlled by the dataSource
+
+```typescript
+export class CustomDataSource<T> implements SelectDataSource<T> {
+    // ...
+    
+    async applyFilter(criteria: FilterCriteria<T>): void | Promise<void> {
+        // Here you implement your own filtering logic
+        // The criteria parameter contains:
+        // - searchText: the text typed by the user
+        // - selected: the currently selected item(s)
+        
+        // You can decide to include selected items even if they don't match the filter
+        // (equivalent to the alwaysIncludesSelected behavior)
+        
+        // You can also implement your own filtering logic
+        // (equivalent to the filterPredicate behavior)
+    }
+}
+```
+
+### Example: Implementing alwaysIncludesSelected behavior in a custom DataSource
+
+If you want to replicate the `alwaysIncludesSelected` behavior in a custom dataSource:
+
+```typescript
+async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
+    this.loading$.next(true);
+    try {
+        // Fetch filtered results
+        const filteredResults = await this.service.search(criteria.searchText);
+        
+        // If we have selected items and want to always include them
+        if (criteria.selected) {
+            const results = [...filteredResults];
+            
+            // For multiple selection
+            if (Array.isArray(criteria.selected)) {
+                criteria.selected.forEach(selectedItem => {
+                    // Check if the item is already in the results
+                    const exists = results.some(item => 
+                        this.compareItems(item, selectedItem)
+                    );
+                    
+                    // If not, add it
+                    if (!exists) {
+                        results.push(selectedItem);
+                    }
+                });
+            } 
+            // For single selection
+            else {
+                const exists = results.some(item => 
+                    this.compareItems(item, criteria.selected)
+                );
+                
+                if (!exists) {
+                    results.push(criteria.selected);
+                }
+            }
+            
+            this.data.next(results);
+        } else {
+            this.data.next(filteredResults);
+        }
+    } finally {
+        this.loading$.next(false);
+    }
+}
+
+// Helper function to compare items
+private compareItems(a: Person, b: Person): boolean {
+    return a.id === b.id;
+}
+```
+
+### Choosing Between Array and SelectDataSource
+
+- **Use a simple array** when you have a small set of static data that doesn't require server-side filtering.
+- **Implement a SelectDataSource** when you need complete control over filtering, especially for:
+    - Fetching data from the server based on typed text (typeahead)
+    - Handling large datasets
+    - Implementing complex filtering logic
+    - Showing loading indicators during asynchronous operations
 
 ## Typeahead Functionality with Custom DataSource
 
@@ -220,31 +322,33 @@ export class PersonDataSource implements SelectDataSource<Person> {
     }
 
     // Called when the component connects to this data source
-    connect(collectionViewer: CollectionViewer<Person>): Observable<Person[]> {
-        this.viewerSubscription = collectionViewer.viewChange.subscribe(async vc => {
-            if (vc.text) {
-                this.loading$.next(true);
-                try {
-                    const result = await this.service.search(vc.text);
-                    this.data.next(result);
-                } finally {
-                    this.loading$.next(false);
-                }
-            }
-        })
+    connect(): Observable<Person[]> {
         return this.data.asObservable();
     }
 
     // Called when the component disconnects from this data source
-    disconnect(collectionViewer: CollectionViewer<Person>): void {
+    disconnect(): void {
         this.viewerSubscription?.unsubscribe();
         this.loading$.complete();
         this.data.complete();
     }
 
-    // Provides loading state to the component
-    loading(collectionViewer: CollectionViewer<Person>): Observable<boolean> {
+    // The component wil observes this loading state to show a progress bar.
+    loading(): Observable<boolean> {
         return this.loading$.asObservable();
+    }
+
+    // The component will invoke this method whenever the input changes, respecting the debounceTime
+    async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
+        if (criteria.searchText) {
+            this.loading$.next(true);
+            try {
+                const result = await this.service.search(criteria.searchText);
+                this.data.next(result);
+            } finally {
+                this.loading$.next(false);
+            }
+        }
     }
 }
 ```
@@ -283,7 +387,7 @@ export class TypeaheadExampleComponent implements OnInit {
 
 ### How It Works
 
-1. **User Types**: When the user types in the select input, the component emits the text via `viewChange` observable.
+1. **User Types**: When the user types in the select input, the component invokes SelectDataSource.applyFilter.
 
 2. **DataSource Reacts**: Your custom data source receives the text and performs a search operation.
 
@@ -294,7 +398,6 @@ export class TypeaheadExampleComponent implements OnInit {
 5. **Loading Completes**: The data source emits a `false` loading state, and the progress bar disappears.
 
 This pattern allows for efficient typeahead functionality, even with large datasets or when fetching data from remote APIs.
-
 
 ### MerProgressBar
 
@@ -312,7 +415,7 @@ The `MerProgressBar` component displays a visual progress bar, useful for indica
 #### Input Properties
 
 | Name | Type | Default | Description |
-|------|------|--------|-----------|
+|------|------|---------|-------------|
 | value | number | 0 | Current progress value (between 0 and 1) |
 | indeterminate | boolean | false | Determines if the progress bar should show an indeterminate progress indicator |
 
@@ -395,7 +498,6 @@ The MerSelectComponent can be integrated with Angular Material's mat-form-field 
 npm install @merelis/angular-material --save
 ```
 
-
 ### Usage with mat-form-field
 
 ```typescript
@@ -448,9 +550,6 @@ export class MaterialExampleComponent {
   }
 }
 ```
-
-
-
 
 ## Component Integration
 

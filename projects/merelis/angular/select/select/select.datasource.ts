@@ -1,89 +1,42 @@
 import { Comparable, DisplayWith, FilterPredicate } from "../types";
-import { BehaviorSubject, combineLatest, Observable, Subscription } from "rxjs";
+import { BehaviorSubject, Observable } from "rxjs";
 
-export interface ViewerChange<T> {
-    text?: string;
+export interface FilterCriteria<T> {
+    searchText?: string;
     selected?: T | T[] | null
 }
 
-export interface CollectionViewer<T> {
-    /**
-     * A stream that emits whenever the `CollectionViewer` starts looking at a new portion of the
-     * data.
-     */
-    viewChange: Observable<ViewerChange<T>>;
-}
-
-
-
 export interface SelectDataSource<T> {
-
-    connect(collectionViewer: CollectionViewer<T>): Observable<T[]>;
-
-    disconnect(collectionViewer: CollectionViewer<T>): void;
-
-    loading(collectionViewer: CollectionViewer<T>): Observable<boolean> | undefined;
-}
-
-class DataViewer<T> {
-    readonly viewer: CollectionViewer<T>;
-    readonly filtered = new BehaviorSubject<T[]>([]);
-    readonly subscription: Subscription;
-    private data: T[] = [];
-    private viewerChange: ViewerChange<T> = {};
-    private alwaysIncludesSelected: boolean;
-    filterPredicate: FilterPredicate<T>
-    compareWith: Comparable<T>;
-    displayWith?: DisplayWith<T>;
-
-    constructor(
-        data: Observable<T[]>,
-        viewer: CollectionViewer<T>,
-        alwaysIncludesSelected: boolean,
-        filterPredicate: FilterPredicate<T>,
-        compareWith: Comparable<T>,
-        displayWith: DisplayWith<T> | undefined,
-    ) {
-        this.viewer = viewer;
-        this.alwaysIncludesSelected = alwaysIncludesSelected;
-        this.filterPredicate = filterPredicate;
-        this.compareWith = compareWith;
-        this.displayWith = displayWith
-        this.subscription = combineLatest([viewer.viewChange, data])
-            .subscribe(([v, d]) => {
-                this.data = d;
-                this.viewerChange = v;
-                this.doFilter();
-            })
-    }
-
-
-    doFilter(): void {
-        this.filtered.next(this.filterData(this.data ?? [], this.viewerChange ?? {}));
-    }
+    /**
+     * Connect to the data source to get updates
+     */
+    connect(): Observable<T[]>;
 
     /**
-     * Returns a filtered data array where each filter object contains the filter string within
-     * the result of the filterPredicate function. If no filter is set, returns the data array
-     * as provided.
+     * Disconnect from the data source
      */
-    private filterData(data: T[], viewer: ViewerChange<T>) {
-        return !viewer.text ?
-            data :
-            data.filter(obj => this.filterPredicate(
-                obj,
-                viewer.text,
-                viewer.selected,
-                this.alwaysIncludesSelected,
-                this.compareWith,
-                this.displayWith,
-            ));
+    disconnect(): void;
 
-    }
+    /**
+     * Apply filter criteria as user types to filter data or fetch from server.
+     * Can return void for synchronous operations or Promise<void> for async operations.
+     * Note: If a Promise is returned, it will be "fire and forget" - the select component
+     * will not wait for the Promise to resolve before emitting changes.
+     */
+    applyFilter(criteria: FilterCriteria<T>): void | Promise<void>;
+
+    /**
+     * Optional loading state observable
+     */
+    loading(): Observable<boolean> | undefined;
 }
-
 
 export class MerSelectDataSource<T> implements SelectDataSource<T> {
+    // Data-related subjects and observables
+    protected _data = new BehaviorSubject<T[]>([]);
+    protected _filteredData = new BehaviorSubject<T[]>([]);
+    protected _currentFilter = new BehaviorSubject<FilterCriteria<T>>({});
+    protected _alwaysIncludesSelected = false;
 
     get data(): T[] {
         return this._data.value;
@@ -91,6 +44,7 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
 
     set data(value: T[]) {
         this._data.next(value);
+        this._applyFilters();
     }
 
     get compareWith(): Comparable<T> {
@@ -99,9 +53,8 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
 
     set compareWith(value: Comparable<T>) {
         this._compareWith = value;
-        this.doUpdateDataViewers();
+        this._applyFilters();
     }
-
 
     get displayWith(): DisplayWith<T> | undefined {
         return this._displayWith;
@@ -109,7 +62,7 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
 
     set displayWith(value: DisplayWith<T> | undefined) {
         this._displayWith = value;
-        this.doUpdateDataViewers();
+        this._applyFilters();
     }
 
     get filterPredicate(): FilterPredicate<T> {
@@ -118,13 +71,8 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
 
     set filterPredicate(value: FilterPredicate<T>) {
         this._filterPredicate = value;
-        this.doUpdateDataViewers();
+        this._applyFilters();
     }
-
-
-    protected _data = new BehaviorSubject<T[]>([]);
-    protected viewers: DataViewer<T>[] = [];
-    protected alwaysIncludesSelected = false;
 
     constructor(data?: T[], options?: {
         alwaysIncludesSelected?: boolean,
@@ -133,73 +81,80 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
         filterPredicate?: FilterPredicate<T>,
     }) {
         this._data.next(data ?? []);
+
         if (options) {
-            this.alwaysIncludesSelected = options.alwaysIncludesSelected ?? false;
+            this._alwaysIncludesSelected = options.alwaysIncludesSelected ?? false;
             if (options.compareWith) {
-                this.compareWith = options.compareWith;
+                this._compareWith = options.compareWith;
             }
-            if (options.displayWith){
-                this.displayWith = options.displayWith;
+            if (options.displayWith) {
+                this._displayWith = options.displayWith;
             }
             if (options.filterPredicate) {
-                this.filterPredicate = options.filterPredicate;
+                this._filterPredicate = options.filterPredicate;
             }
         }
+
+        // Initialize filtered data
+        this._applyFilters();
     }
 
-    connect(collectionViewer: CollectionViewer<T>): Observable<T[]> {
-        const dataViewer = new DataViewer(this._data.asObservable(), collectionViewer,
-            this.alwaysIncludesSelected,
-            this.filterPredicate,
-            this.compareWith,
-            this.displayWith);
-        this.viewers.push(dataViewer);
-        return dataViewer.filtered.asObservable();
+    connect(): Observable<T[]> {
+        return this._filteredData.asObservable();
     }
 
-    disconnect(collectionViewer: CollectionViewer<T>): void {
-        this.viewers = this.viewers.filter(dataViewer => {
-            if (dataViewer.viewer === collectionViewer){
-                dataViewer.subscription.unsubscribe();
-                return false;
-            }
-            return true;
-        });
+    disconnect(): void {
+        // No need to track viewers anymore
     }
 
     dispose(): void {
-        this.viewers.forEach(dataViewer => dataViewer.subscription.unsubscribe())
-        this.viewers = [];
         this._data.complete();
+        this._filteredData.complete();
+        this._currentFilter.complete();
     }
 
-    loading(collectionViewer: CollectionViewer<T>): Observable<boolean> | undefined{
-        return;
+    loading(): Observable<boolean> | undefined {
+        return undefined;
     }
 
-    protected doUpdateDataViewers(): void {
-        this.viewers.forEach(viewer => {
-            viewer.compareWith = this._compareWith;
-            viewer.filterPredicate = this._filterPredicate;
-            viewer.doFilter();
-        })
+    applyFilter(criteria: FilterCriteria<T>): void {
+        this._currentFilter.next(criteria);
+        this._applyFilters();
+    }
+
+    protected _applyFilters(): void {
+        const data = this._data.value;
+        const filter = this._currentFilter.value;
+        this._filteredData.next(this._filterData(data, filter));
+    }
+
+    /**
+     * Returns a filtered data array based on the current filter criteria
+     */
+    private _filterData(data: T[], filter: FilterCriteria<T>): T[] {
+        return !filter.searchText ?
+            data :
+            data.filter(obj => this._filterPredicate(
+                obj,
+                filter.searchText,
+                filter.selected,
+                this._alwaysIncludesSelected,
+                this._compareWith,
+                this._displayWith,
+            ));
     }
 
     protected _compareWith: Comparable<T> = (a: T, b: T) => a === b;
     protected _displayWith?: DisplayWith<T>;
 
     /**
-     * Checks if a data object matches the data source's filter string. By default, each data object
-     * is converted to a string of its properties and returns true if the filter has
-     * at least one occurrence in that string. By default, the filter string has its whitespace
-     * trimmed and the match is case-insensitive. May be overridden for a custom implementation of
-     * filter matching.
-     * @returns Whether the filter matches against the data
+     * Default filter predicate implementation
      */
     protected _filterPredicate: FilterPredicate<T> = (data, filter, selected, alwaysIncludesSelected, compareWith, displayWith): boolean => {
         if (!filter) {
             return true;
         }
+
         if (alwaysIncludesSelected && selected) {
             if (Array.isArray(selected)) {
                 const has = selected.some(item => compareWith(item, data))
@@ -212,17 +167,13 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
                 }
             }
         }
+
         if (typeof filter === 'string') {
             // Transform the data into a lowercase string of all property values.
             const target = displayWith ? displayWith(data) : data;
             const dataStr = (typeof target === 'string') ? target.toLowerCase().trim() : Object.keys(target as unknown as Record<string, any>)
                 .reduce((currentTerm: string, key: string) => {
                     // Use an obscure Unicode character to delimit the words in the concatenated string.
-                    // This avoids matches where the values of two columns combined will match the user's query
-                    // (e.g. `Flute` and `Stop` will match `Test`). The character is intended to be something
-                    // that has a very low chance of being typed in by somebody in a text field. This one in
-                    // particular is "White up-pointing triangle with dot" from
-                    // https://en.wikipedia.org/wiki/List_of_Unicode_characters
                     return currentTerm + (target as unknown as Record<string, any>)[key] + '◬';
                 }, '')
                 .toLowerCase();
@@ -236,5 +187,4 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
             return true;
         }
     };
-
 }
