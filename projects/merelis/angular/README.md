@@ -16,7 +16,7 @@ Currently, the library provides the following components:
 
 ### MerSelectComponent
 
-An advanced select component with filtering and typeahead capabilities. Supports single or multiple selection, full customization, reactive forms integration, and conditional rendering.
+An advanced select component with filtering and typeahead capabilities. Supports single or multipleSelection selection, full customization, reactive forms integration, and conditional rendering.
 
 ### MerProgressBar
 
@@ -44,19 +44,19 @@ import { MerSelectComponent } from '@merelis/angular/select';
 import { MerProgressBar } from '@merelis/angular/progress-bar';
 
 @Component({
-  selector: 'app-example',
-  standalone: true,
-  imports: [
-    MerSelectComponent,
-    MerProgressBar
-  ],
-  template: `
+    selector: 'app-example',
+    standalone: true,
+    imports: [
+        MerSelectComponent,
+        MerProgressBar
+    ],
+    template: `
     <mer-select [dataSource]="items" [(value)]="selectedItem"></mer-select>
     <mer-progress-bar [value]="0.5"></mer-progress-bar>
   `
 })
 export class ExampleComponent {
-  // ...
+    // ...
 }
 ```
 
@@ -85,7 +85,7 @@ The `MerSelectComponent` offers a robust alternative to the native HTML select, 
 | readOnly | boolean | false | Sets the component as read-only |
 | disableSearch | boolean | false | Disables text search functionality |
 | disableOpeningWhenFocusedByKeyboard | boolean | false | Prevents the panel from opening automatically when focused via keyboard |
-| multiple | boolean | false | Allows multiple selection |
+| multipleSelection | boolean | false | Allows multipleSelection selection |
 | canClear | boolean | true | Allows clearing the selection |
 | alwaysIncludesSelected | boolean | false | Always includes the selected item in the dropdown, even if it doesn't match the filter. **Note: Only effective when using an array as dataSource, not when using a custom SelectDataSource.** |
 | autoActiveFirstOption | boolean | true | Automatically activates the first option when the panel is opened |
@@ -224,7 +224,7 @@ async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
         if (criteria.selected) {
             const results = [...filteredResults];
             
-            // For multiple selection
+            // For multipleSelection selection
             if (Array.isArray(criteria.selected)) {
                 criteria.selected.forEach(selectedItem => {
                     // Check if the item is already in the results
@@ -579,6 +579,42 @@ The components can be customized using CSS variables. Below are the available va
   --mer-select-letter-spacing: normal;
   --mer-select-min-height: 32px;
   --mer-select-side-padding: 8px;
+    --mer-select-input-height ,100%;
+    --mer-select-input-width ,100%
+    --mer-select-side-padding, 2px
+    --mer-select-trigger-wrapper-gap, 4px;
+    
+    
+  // multiple select  
+    --mer-select-multiple-trigger-wrapper-gap: 4px;
+    --mer-select-multiple-side-padding: 2px;
+    --mer-select-multiple-input-min-width: 33%;
+    --mer-select-multiple-input-height: 24px;
+    --mer-select-multiple-input-padding: 0 4px;
+    --mer-select-multiple-values-gap: 4px;
+    --mer-select-multiple-values-padding: 0;
+    --mer-select-chip-background-color: #e6e6e6;
+    --mer-select-chip-border-radius: 8px;
+    --mer-select-chip-padding: 2px 2px 2px 8px;
+    --mer-select-chip-font-size: 0.875rem;
+
+    --mer-select-chip-remove-cursor: pointer;
+    --mer-select-chip-remove-margin-left: 4px;
+    --mer-select-chip-remove-font-size: 1rem;
+    --mer-select-chip-remove-line-height: 1rem;
+    --mer-select-chip-remove-font-weight: normal;
+    --mer-select-chip-remove-text-color: #000;
+    --mer-select-chip-remove-bg-color: #d1d1d1;
+    --mer-select-chip-remove-border-radius: 9999px;
+    --mer-select-chip-remove-padding: 0;
+    --mer-select-chip-remove-width: 12px;
+    --mer-select-chip-remove-height: 12px;
+    --mer-select-chip-remove-opacity: .5;
+
+    --mer-select-chip-remove-text-color-hover: white;
+    --mer-select-chip-remove-bg-color-hover: #505050;
+    --mer-select-chip-remove-opacity-hover: 1;
+    
   
   // Colors and states
   --mer-select-background-color: white;
@@ -646,7 +682,15 @@ The components can be customized using CSS variables. Below are the available va
   --mer-option-active-background-color: #ececec;
   --mer-option-selected-color: #0d67ca;
   --mer-option-selected-background-color: #eef6ff;
+  
+  --mer-option-selected-hover-color: #0d67ca;
+  --mer-option-selected-hover-background-color: #e1eef8;
+  --mer-option-selected-active-color: #0d67ca;
+  --mer-option-selected-active-background-color: #dcecfb;
+  --mer-option-selected-active-hover-color: #0d67ca;
+  --mer-option-selected-active-hover-background-color: #dceafa;
 }
+
 ```
 
 #### MerProgressBar

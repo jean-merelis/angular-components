@@ -1,3 +1,4 @@
+import { CommonModule } from "@angular/common";
 import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from "@angular/core";
 import { FormsModule, ReactiveFormsModule, UntypedFormControl, Validators } from "@angular/forms";
 import { MatFormField, MatLabel } from "@angular/material/form-field";
@@ -13,6 +14,7 @@ import { PersonDataSource, PersonService } from "./typeahead.datasource";
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     imports: [
+        CommonModule,
         MatFormField,
         MatLabel,
         MerSelectComponent,

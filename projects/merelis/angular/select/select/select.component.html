@@ -1,29 +1,58 @@
-@if (textinput.value == '') {
-    <div class="mer-select-trigger-wrapper mer-select-trigger" (click)="focus();_handleClick($event)">
-        <div style="height:.67em;"></div>
-            <ng-container [ngTemplateOutlet]="triggerTemplate()?.templateRef || defaulttrigger"
-                          [ngTemplateOutletContext]="{$implicit: value()}">
+@if (!multipleSelection()) {
 
-            </ng-container>
-    </div>
+    @if (textinput.value == '') {
+        <div class="mer-select-trigger-wrapper mer-select-trigger" (click)="focus();_handleClick($event)">
+            <div style="height:.67em;"></div>
+                <ng-container [ngTemplateOutlet]="triggerTemplate()?.templateRef || defaulttrigger"
+                              [ngTemplateOutletContext]="{$implicit: value()}">
+
+                </ng-container>
+        </div>
+    } @else {
+        <div class="mer-select-trigger-placeholder mer-select-triggerw">
+            <div style="height:.67em;"></div>
+        </div>
+    }
+
+
+    <input #textinput class="mer-select-input" style="outline: none"
+           [readonly]="readOnly() || disableSearch()"
+           [disabled]="disabled()"
+           [placeholder]="(empty && placeholder() && shouldLabelFloat) ? placeholder() : ''"
+           (focusin)="_handleFocus()"
+           (blur)="_handleBlur()"
+           (keydown)="_handleKeydown($event)"
+           (input)="_handleInput($event)"
+           (click)="_handleClick($event)"
+
+    >
 } @else {
-    <div class="mer-select-trigger-placeholder mer-select-triggerw">
-        <div style="height:.67em;"></div>
+    <div class="mer-select-trigger-wrapper mer-select-trigger multiple-select-mode" (click)="focus();_handleClick($event)">
+            @let selected = valueAsArray();
+                <div class="mer-select-multiple-values">
+            @if (selected && isArray(selected) && selected.length > 0) {
+                    @for (item of selected; track item) {
+                        <div class="mer-select-chip">
+                            {{ getDisplayValue(item) }}
+                            @if (!disabled() && !readOnly()) {
+                               <span class="mer-select-chip-remove" (mousedown)="$event.stopPropagation()" (click)="removeSelection(item, $event)">&times;</span>
+                            }
+                        </div>
+                    }
+
+        }
+        <input #textinput class="mer-select-input"
+               [readonly]="readOnly() || disableSearch()"
+               [disabled]="disabled()"
+               [placeholder]="(placeholder() && shouldLabelFloat && !(readOnly() || disableSearch())) ? placeholder() : ''"
+               (focusin)="_handleFocus()"
+               (blur)="_handleBlur()"
+               (keydown)="_handleKeydown($event)"
+               (input)="_handleInput($event)"
+               (click)="_handleClick($event)">
+                </div>
     </div>
 }
-
-
-<input #textinput class="mer-select-input" style="outline: none"
-       [readonly]="readOnly() || disableSearch()"
-       [disabled]="disabled()"
-       [placeholder]="(empty && placeholder() && shouldLabelFloat) ? placeholder() : ''"
-       (focusin)="_handleFocus()"
-       (blur)="_handleBlur()"
-       (keydown)="_handleKeydown($event)"
-       (input)="_handleInput($event)"
-       (click)="_handleClick($event)"
-
->
 
 @if (!disabled() && !readOnly()) {
     <div class="chevron-wrapper" (click)="(hasValue() && canClear()) ? clearValue() : focus()">
@@ -62,8 +91,24 @@
 
 </ng-template>
 
+
 <ng-template #defaulttrigger let-opt>
-    {{ getDisplayValue(opt) }}
+    @if (!multipleSelection()) {
+        {{ getDisplayValue(opt) }}
+    } @else {
+        @if (opt && isArray(opt) && opt.length > 0) {
+            <div class="mer-select-multiple-values">
+                @for (item of opt; track item) {
+                    <div class="mer-select-chip">
+                        {{ getDisplayValue(item) }}
+                        <span class="mer-select-chip-remove" (mousedown)="$event.stopPropagation()" (click)="removeSelection(item, $event)">&times;</span>
+                    </div>
+                }
+            </div>
+        } @else {
+            <span class="mer-select-placeholder">{{ placeholder() || '' }}</span>
+        }
+    }
 </ng-template>
 
 <ng-template #defaultopt let-opt>

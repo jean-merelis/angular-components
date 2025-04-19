@@ -22,6 +22,7 @@
 
     &:focus,
     &.mer-option-active {
+        color: var(--mer-option-active-color, inherit);
         background-color: var(--mer-option-active-background-color, #ececec);
     }
 
@@ -34,6 +35,21 @@
         // it has the checkbox to show the selected state.
         &:not(.mer-option-multiple) {
             background-color: var(--mer-option-selected-background-color, #eef6ff);
+        }
+        &:hover{
+            .mer-option-label {
+                color: var(--mer-option-selected-hover-color, #0d67ca);
+            }
+            background-color: var(--mer-option-selected-hover-background-color, #e1eef8);
+        }
+
+        &.mer-option-active {
+            color: var(--mer-option-selected-active-color, #0d67ca);
+            background-color: var(--mer-option-selected-active-background-color, #dcecfb);
+        }
+        &.mer-option-active:hover {
+            color: var(--mer-option-selected-active-hover-color, #0d67ca);
+            background-color: var(--mer-option-selected-active-hover-background-color, #dceafa);
         }
     }
 

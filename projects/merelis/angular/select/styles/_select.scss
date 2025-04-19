@@ -99,8 +99,8 @@ $background-color: white;
         display: block;
         position: absolute;
         box-sizing: border-box;
-        height: 100%;
-        width: 100%;
+        height: var(--mer-select-input-height ,100%);
+        width:var(--mer-select-input-width ,100%);
         top: 0;
         bottom: 0;
         left: 0;
@@ -131,12 +131,75 @@ $background-color: white;
         z-index: 3;
     }
 
+    .mer-select-trigger-wrapper.multiple-select-mode {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--mer-select-multiple-trigger-wrapper-gap, 4px);
+        padding: 0px var(--mer-select-multiple-side-padding, 2px);
+        position: relative;
+
+        --mer-select-input-width: auto;
+        input.mer-select-input {
+            position: relative;
+            display: inline-block;
+            min-width: var(--mer-select-multiple-input-min-width , 33%);
+            flex: 1;
+            height: var(--mer-select-multiple-input-height , 24px);
+            padding: var(--mer-select-multiple-input-padding, 0 4px);
+        }
+        .mer-select-multiple-values {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: var(--mer-select-multiple-values-gap , 4px);
+            padding: var(--mer-select-multiple-values-padding , 0);
+        }
+
+        .mer-select-chip {
+            display: inline-flex;
+            align-items: center;
+            background-color: var(--mer-select-chip-background-color, #e6e6e6);
+            border-radius: var(--mer-select-chip-border-radius, 8px);
+            padding: var(--mer-select-chip-padding, 2px 2px 2px 8px);
+            font-size: var(--mer-select-chip-font-size, 0.875rem);
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .mer-select-chip-remove {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            margin-left: var(--mer-select-chip-remove-margin-left, 4px);
+            cursor: var(--mer-select-chip-remove-cursor,  pointer);
+            font-size:  var(--mer-select-chip-remove-font-size, 1rem);
+            line-height: var(--mer-select-chip-remove-line-height,  1rem);
+            font-weight: var(--mer-select-chip-remove-font-weight, normal);
+            color: var(--mer-select-chip-remove-text-color, #000);
+            background-color: var(--mer-select-chip-remove-bg-color, #d1d1d1);
+            border-radius: var(--mer-select-chip-remove-border-radius, 9999px);
+            padding: var(--mer-select-chip-remove-padding, 0);
+            width: var(--mer-select-chip-remove-width, 12px);
+            height: var(--mer-select-chip-remove-height, 12px);
+            opacity: var(--mer-select-chip-remove-opacity, .5);
+        }
+
+        .mer-select-chip-remove:hover {
+            color: var(--mer-select-chip-remove-text-color-hover, white);
+            background-color: var(--mer-select-chip-remove-bg-color-hover, #505050);
+            opacity: var(--mer-select-chip-remove-opacity-hover, 1);
+        }
+
+    }
 }
 
 
 
 @mixin default {
-    mer-select {
+    mer-select, .mer-select {
         @include base;
     }
 

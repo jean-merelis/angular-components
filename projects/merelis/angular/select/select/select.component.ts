@@ -78,9 +78,9 @@ import {
     BehaviorSubject,
     debounceTime,
     defer,
-    distinctUntilChanged,
+    distinctUntilChanged, EMPTY,
     fromEvent,
-    merge,
+    merge, mergeMap,
     Observable,
     of as observableOf,
     Subject,
@@ -92,7 +92,7 @@ import {
     _countGroupLabelsBeforeOption,
     _getOptionScrollPosition,
     MER_OPTION_GROUP,
-    MerOption,
+    MerOption, MerOptionParentComponent,
     MerOptionSelectionChange
 } from "../option";
 
@@ -246,7 +246,7 @@ export class MerSelectOptionDef {
         "[class.disabled]": "disabled()"
     }
 })
-export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit {
+export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit, MerOptionParentComponent {
 
     readonly dataSource = input<SelectDataSource<T> | T[]>();
     readonly value = model<T | T[] | null | undefined>();
@@ -255,7 +255,12 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     readonly readOnly = input(false, {transform: booleanAttribute});
     readonly disableSearch = input(false, {transform: booleanAttribute});
     readonly disableOpeningWhenFocusedByKeyboard = input(false, {transform: booleanAttribute});
-    readonly multiple = input(false, {transform: booleanAttribute});
+    readonly multipleSelection = input(false, {transform: booleanAttribute, alias: "multiple"});
+
+    get multiple() {
+        return this.multipleSelection();
+    }
+
     readonly canClear = input(true, {transform: booleanAttribute});
     readonly alwaysIncludesSelected = input(false, {transform: booleanAttribute});
     readonly autoActiveFirstOption = input(true, {transform: booleanAttribute});
@@ -288,13 +293,16 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     get panelOpen(): boolean {
         return this._overlayAttached && this.showPanel;
     }
-    get _floatLabel(){
+
+    get _floatLabel() {
         return this.__floatLabel;
     }
-    set _floatLabel(b: boolean){
+
+    set _floatLabel(b: boolean) {
         this.__floatLabel = b;
         this.cd.markForCheck();
     }
+
     private __floatLabel: boolean = true;
 
     protected readonly filteredOptions = signal<T[]>([]);
@@ -314,7 +322,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     protected readonly _defaults = inject<MerSelectDefaultOptions | null>(MER_SELECT_DEFAULT_OPTIONS, {optional: true});
     protected parentFormGroup = inject(FormGroupDirective, {optional: true});
 
-    protected readonly input = viewChild.required<ElementRef<HTMLInputElement>>("textinput");
+    protected readonly input = viewChild<ElementRef<HTMLInputElement>>("textinput");
     protected readonly triggerTemplate = contentChild(MerSelectTriggerDef);
     protected readonly optionTemplate = contentChild(MerSelectOptionDef);
 
@@ -335,7 +343,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     protected readonly hasValue = computed(() => {
         const value = this.value();
         if (isNotPresent(value)) return false;
-        if (this.multiple() && Array.isArray(value)) {
+        if (this.multipleSelection() && Array.isArray(value)) {
             return value.length > 0
         }
         return true;
@@ -384,22 +392,24 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
     focus(): void {
         if (!this.disabled()) {
-            this.input().nativeElement.focus();
+            this.input()?.nativeElement.focus();
         }
     }
 
 
     protected checkFocus(): void {
-        afterNextRender({read: () => {
-            this._focused = this._hasFocus();
-            if (this._focused) {
-                this.onFocus.emit();
-            } else {
-                this.onBlur.emit()
+        afterNextRender({
+            read: () => {
+                this._focused = this._hasFocus();
+                if (this._focused) {
+                    this.onFocus.emit();
+                } else {
+                    this.onBlur.emit()
+                }
+                this._stateChanges.next();
+                this.cd.markForCheck();
             }
-            this._stateChanges.next();
-            this.cd.markForCheck();
-        }}, {injector: this._environmentInjector});
+        }, {injector: this._environmentInjector});
     }
 
     /**
@@ -415,7 +425,10 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
      */
     protected get panelClosingActions(): Observable<MerOptionSelectionChange | null> {
         return merge(
-            this.optionSelections,
+            // Em modo múltiplo, não feche o painel quando uma opção é selecionada
+            this.multiple
+                ? EMPTY
+                : this.optionSelections,
             this._keyManager.tabOut.pipe(filter(() => this._overlayAttached)),
             this._closeKeyEventStream,
             this._getOutsideClickStream(),
@@ -423,18 +436,17 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
                 ? this._overlayRef.detachments().pipe(filter(() => this._overlayAttached))
                 : observableOf(),
         ).pipe(
-            // Normalize the output so we return a consistent type.
+            // Normalize a saída para que retornemos um tipo consistente.
             map(event => (event instanceof MerOptionSelectionChange ? event : null)),
         );
     }
 
-    /** Stream of changes to the selection state of the autocomplete options. */
     protected readonly optionSelections: Observable<MerOptionSelectionChange> = defer(() => {
+        // Usando mergeMap em vez de switchMap para não descartar eventos
         return this.renderedOptions$.pipe(
             startWith(this.renderedOptions()),
-            switchMap(() => merge(...this.renderedOptions().map((option: MerOption<T>) => option.onSelectionChange))),
+            mergeMap(() => merge(...this.renderedOptions().map((option: MerOption<T>) => option.onSelectionChange))),
         );
-
     }) as Observable<MerOptionSelectionChange>;
 
     /** The currently active option, coerced to MatOption type. */
@@ -447,8 +459,8 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     }
 
     protected readonly selection = computed(() => {
-        if (this.multiple()) {
-            const sel = new SelectionModel<T>(this.multiple(), []);
+        if (this.multipleSelection()) {
+            const sel = new SelectionModel<T>(this.multipleSelection(), []);
             sel.compareWith = this.compareWith();
             this.subscribeToSelectionChange(sel);
             return sel;
@@ -487,7 +499,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
     /** Whether the input currently has focus. */
     private _hasFocus(): boolean {
-        return _getFocusedElementPierceShadowDom() === this.input().nativeElement;
+        return _getFocusedElementPierceShadowDom() === this.input()?.nativeElement;
     }
 
     //// panel
@@ -507,7 +519,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     /** Element for the panel containing the autocomplete options. */
     protected readonly panel = viewChild.required<ElementRef>("panel");
 
-    //// < panel
+    private _optionsSubscription = new Subscription();
 
     private _cleanupWindowBlur: (() => void) | undefined;
     protected subSelectionChanges?: Subscription;
@@ -544,6 +556,25 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         effect(() => {
             this.subscribeToInputChanges();
         });
+        effect(() => {
+            const options = this.renderedOptions();
+            this._optionsSubscription?.unsubscribe();
+            this._optionsSubscription = new Subscription();
+
+            if (options.length > 0) {
+                if (this.multiple) {
+                    this._optionsSubscription.add(
+                        merge(...options.map(option => option.onSelectionChange))
+                            .subscribe(evt => {
+                                if (evt.isUserInput) { // Só processe cliques do usuário
+                                    this._handleMultipleSelection(evt as any);
+                                }
+                            })
+                    );
+                }
+                this._updateOptionsSelectedState();
+            }
+        });
     }
 
     ngOnInit(): void {
@@ -574,6 +605,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
     ngOnDestroy(): void {
         this._cleanupWindowBlur?.();
+        this._optionsSubscription?.unsubscribe();
         this.unsubscribeDataSource();
         this._connectedDataSource?.disconnect();
         this.internalDataSource?.dispose();
@@ -662,7 +694,21 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     }
 
     writeValue(value: T | T[]): void {
-        this.value.set(value);
+        if (this.multipleSelection()) {
+            // Ensure it's always an array in multiple mode
+            if (isNotPresent(value)) {
+                this.value.set([]);
+            } else if (!Array.isArray(value)) {
+                this.value.set([value as T]);
+            } else {
+                this.value.set([...value]);
+            }
+        } else {
+            this.value.set(value);
+        }
+
+        // Update options' selected state when value changes externally
+        afterNextRender({read: () => this._updateOptionsSelectedState()}, {injector: this._environmentInjector});
         this._stateChanges.next();
     }
 
@@ -714,18 +760,27 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
                 return (
                     this._overlayAttached &&
-                    clickTarget !== this.input().nativeElement &&
-                    // Normally focus moves inside `mousedown` so this condition will almost always be
-                    // true. Its main purpose is to handle the case where the input is focused from an
-                    // outside click which propagates up to the `body` listener within the same sequence
-                    // and causes the panel to close immediately (see #3106).
-                    !this._hasFocus() &&
+                    clickTarget !== this.input()?.nativeElement &&
+                    !this._isInsideOptionElement(clickTarget) && // Check if click was inside an option
                     (!customOrigin || !customOrigin.contains(clickTarget)) &&
                     !!this._overlayRef &&
                     !this._overlayRef.overlayElement.contains(clickTarget)
                 );
             }),
         );
+    }
+
+    // Helper method to check if a click was inside an option element
+    private _isInsideOptionElement(element: HTMLElement): boolean {
+        let current = element;
+        // Traverse up the DOM to see if we clicked inside an option
+        while (current && current !== this._document.body) {
+            if (current.classList.contains('mer-option')) {
+                return true;
+            }
+            current = current.parentElement as HTMLElement;
+        }
+        return false;
     }
 
 
@@ -753,16 +808,14 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
     /** Closes the autocomplete suggestion panel. */
     closePanel(): void {
-
         if (!this._overlayAttached) {
             return;
         }
 
+        // Guarde o valor atual antes de fechar
+        const currentValue = this.value();
+
         if (this.panelOpen) {
-            // Only emit if the panel was visible.
-            // `afterNextRender` always runs outside of the Angular zone, so all the subscriptions from
-            // `_subscribeToClosingActions()` are also outside of the Angular zone.
-            // We should manually run in Angular zone to update UI after panel closing.
             this.zone.run(() => {
                 this.closed.emit();
                 if (!this._componentDestroyed) {
@@ -770,6 +823,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
                 }
             });
         }
+
         this._isOpen = false;
         this._overlayAttached = false;
         this._pendingAutoselectedOption = null;
@@ -781,17 +835,15 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
         this._updatePanelState();
 
-        // Note that in some cases this can end up being called after the component is destroyed.
-        // Add a check to ensure that we don't try to run change detection on a destroyed view.
+        // Restaure o valor que foi guardado (importante para múltipla seleção)
+        if (this.multiple && Array.isArray(currentValue)) {
+            this.value.set(currentValue);
+        }
+
         if (!this._componentDestroyed) {
-            // We need to trigger change detection manually, because
-            // `fromEvent` doesn't seem to do it at the proper time.
-            // This ensures that the label is reset when the
-            // user clicks outside.
             this.cd.detectChanges();
         }
 
-        // Remove aria-owns attribute when the autocomplete is no longer visible.
         if (this._trackedModal) {
             removeAriaReferencedId(this._trackedModal, 'aria-owns', this.panelId);
         }
@@ -811,8 +863,10 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         if (!this.canClear() || this.disabled() || this.readOnly()) {
             return;
         }
-        if (this.multiple()) {
+        if (this.multipleSelection()) {
             this.value.set([]);
+            afterNextRender({read: ()=> this._overlayRef?.updatePosition()}, {injector: this._environmentInjector});
+
         } else {
             this.value.set(null);
         }
@@ -828,27 +882,31 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         const key = event.key;
         const hasModifier = hasModifierKey(event);
 
-        // Prevent the default action on all escape key presses. This is here primarily to bring IE
-        // in line with other browsers. By default, pressing escape on IE will cause it to revert
-        // the input value to the one that it had on focus, however it won't dispatch any events
-        // which means that the model value will be out of sync with the view.
         if (key === 'Escape' && !hasModifier) {
             event.preventDefault();
             this._updateNativeInputValue("");
         }
 
-        this._valueOnLastKeydown = this.input().nativeElement.value;
-
+        this._valueOnLastKeydown = this.input()?.nativeElement.value;
 
         if (this._valueOnLastKeydown === "" && (key === "Backspace" || key === "Delete")) {
-            this.clearValue();
+            if (this.multipleSelection()) {
+                this.removeLastSelection();
+            } else {
+                this.clearValue();
+            }
             event.preventDefault();
             return;
         }
 
         if (this.activeOption && key === 'Enter' && this.panelOpen && !hasModifier) {
+            // Em modo múltiplo, não fechamos o painel ao pressionar Enter
             this.activeOption._selectViaInteraction();
-            this._resetActiveItem();
+
+            if (!this.multiple) {
+                this._resetActiveItem();
+            }
+
             event.preventDefault();
         } else {
             const prevActiveItem = this._keyManager.activeItem;
@@ -862,15 +920,6 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
             if (isArrowKey || this._keyManager.activeItem !== prevActiveItem) {
                 this._scrollToOption(this._keyManager.activeItemIndex || 0);
-
-                // if (this.autoSelectActiveOption && this.activeOption) {
-                //     if (!this._pendingAutoselectedOption) {
-                //         this._valueBeforeAutoSelection = this._valueOnLastKeydown;
-                //     }
-                //
-                //     this._pendingAutoselectedOption = this.activeOption;
-                //     this._assignOptionValue(this.activeOption.value);
-                // }
             }
         }
     }
@@ -878,20 +927,19 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     protected _handleInput(event: Event): void {
         let target = event.target as HTMLInputElement;
         let value: string = target.value;
+
         this.input$.next(value);
         this._pendingAutoselectedOption = null;
 
         if (!value) {
-            this._clearPreviousSelectedOption(null, false);
+            // Don't clear selected values in multiple mode
+            if (!this.multipleSelection()) {
+                this._clearPreviousSelectedOption(null, false);
+            }
         }
 
-        if (this._canOpen() &&  this._hasFocus()) {
-            // When the `input` event fires, the input's value will have already changed. This means
-            // that if we take the `this._element.nativeElement.value` directly, it'll be one keystroke
-            // behind. This can be a problem when the user selects a value, changes a character while
-            // the input still has focus and then clicks away (see #28432). To work around it, we
-            // capture the value in `keydown` so we can use it here.
-            const valueOnAttach = this._valueOnLastKeydown ?? this.input().nativeElement.value;
+        if (this._canOpen() && this._hasFocus()) {
+            const valueOnAttach = this._valueOnLastKeydown ?? this.input()?.nativeElement.value;
             this._valueOnLastKeydown = null;
             this._openPanelInternal(valueOnAttach);
         }
@@ -909,12 +957,12 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     protected _handleBlur(): void {
         this.onTouchedCallback();
         this.checkFocus();
-        this.renderer.setValue(this.input().nativeElement, "");
+        this.renderer.setValue(this.input()?.nativeElement, "");
     }
 
     protected _handleClick(event: MouseEvent): void {
         if (this._canOpen() && !this.panelOpen) {
-             this._openPanelInternal();
+            this._openPanelInternal();
         }
     }
 
@@ -1041,10 +1089,53 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     }
 
     protected _updateNativeInputValue(value: string): void {
-        this.input().nativeElement.value = '';
+        if (this.input()?.nativeElement) {
+            this.input()!.nativeElement.value = '';
+        }
         this.input$.next("");
     }
 
+
+    protected _handleMultipleSelection(event: MerOptionSelectionChange<T>): void {
+        if (!event || !event.source) return;
+
+        const toSelect = event.source;
+        const currentValue = this.value();
+        let newValue: T[] = [];
+
+        // Inicializa o array se necessário
+        if (!Array.isArray(currentValue)) {
+            newValue = isNotPresent(currentValue) ? [] : [currentValue as T];
+        } else {
+            newValue = [...currentValue];
+        }
+
+        const compareWith = this.compareWith() ?? ((a, b) => a === b);
+        const index = newValue.findIndex(item => compareWith(item, toSelect.value));
+
+        // Alterna a seleção
+        if (index > -1) {
+            // Remove se já estiver selecionado
+            newValue.splice(index, 1);
+        } else {
+            // Adiciona se não estiver selecionado
+            newValue.push(toSelect.value);
+        }
+
+        // Atualiza o value sem fechar o painel
+        this.value.set(newValue);
+        this.onChangeCallback(newValue);
+        this._stateChanges.next();
+
+        afterNextRender(() => this._overlayRef?.updatePosition(), {injector: this._environmentInjector});
+
+        // Atualiza o estado de seleção de todas as options
+        this._updateOptionsSelectedState();
+
+        // Limpa o input para uma nova pesquisa
+        this._updateNativeInputValue('');
+        this.input$.next('');
+    }
 
     /**
      * This method closes the panel, and if a value is specified, also sets the associated
@@ -1053,37 +1144,92 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
      */
     protected _setValueAndClose(event: MerOptionSelectionChange<T> | null): void {
         const toSelect = event ? event.source : this._pendingAutoselectedOption;
-        if (toSelect) {
-            this._clearPreviousSelectedOption(toSelect);
-            this._assignOptionValue(toSelect.value);
-            this.value.set(toSelect.value)
-            // TODO(crisbeto): this should wait until the animation is done, otherwise the value
-            // gets reset while the panel is still animating which looks glitchy. It'll likely break
-            // some tests to change it at this point.
-            this.onChangeCallback(toSelect.value);
-            this._focused = true;
-            this.input().nativeElement.focus();
-            this._stateChanges.next();
 
+        if (toSelect) {
+            if (this.multiple) {
+                // Não fechamos o painel em modo múltiplo quando um evento de seleção ocorre
+                const currentValue = this.value();
+                let newValue: T[];
+
+                if (!Array.isArray(currentValue)) {
+                    newValue = isNotPresent(currentValue) ? [] : [currentValue as T];
+                } else {
+                    newValue = [...currentValue];
+                }
+
+                const compareWith = this.compareWith() ?? ((a, b) => a === b);
+                const index = newValue.findIndex(item => compareWith(item, toSelect.value));
+
+                if (index > -1) {
+                    newValue.splice(index, 1);
+                    toSelect.deselect(false); // Importante: atualize o estado do option
+                } else {
+                    newValue.push(toSelect.value);
+                    toSelect.select(false); // Importante: atualize o estado do option
+                }
+
+                this.value.set(newValue);
+                this.onChangeCallback(newValue);
+                this._stateChanges.next();
+
+                // Limpe o input
+                this._updateNativeInputValue('');
+
+                // Em modo múltiplo, não fechamos o painel quando uma opção é selecionada
+                return;
+            } else {
+                // Implementação original para seleção única
+                this._clearPreviousSelectedOption(toSelect);
+                this._assignOptionValue(toSelect.value);
+                this.value.set(toSelect.value);
+                this.onChangeCallback(toSelect.value);
+                this._focused = true;
+                this.input()?.nativeElement.focus();
+                this._stateChanges.next();
+                this.closePanel();
+            }
         } else {
             this._clearPreviousSelectedOption(null);
             this._assignOptionValue(null);
-            // // Wait for the animation to finish before clearing the form control value, otherwise
-            // // the options might change while the animation is running which looks glitchy.
-            // if (this.canClear()) {
-            //     if (this._animationDone) {
-            //         this._animationDone.pipe(take(1)).subscribe(() => {
-            //             this.onChangeCallback(null)
-            //             this.value.set(null);
-            //         });
-            //     } else {
-            //         this.onChangeCallback(null);
-            //         this.value.set(null);
-            //     }
-            // }
+            this.closePanel();
         }
 
-        this.closePanel();
+        afterNextRender({
+            read: () => {
+                this.checkFocus();
+            }
+        }, {injector: this._environmentInjector});
+    }
+
+    protected _updateOptionsSelectedState(): void {
+        const value = this.value();
+
+        if (isNotPresent(value)) {
+            this.renderedOptions().forEach(option => {
+                option.deselect(false);
+            });
+            return;
+        }
+
+        const compareWith = this.compareWith() ?? ((a, b) => a === b);
+
+        this.renderedOptions().forEach(option => {
+            if (Array.isArray(value)) {
+                const isSelected = value.some(v => compareWith(v, option.value));
+                if (isSelected && !option.selected) {
+                    option.select(false);
+                } else if (!isSelected && option.selected) {
+                    option.deselect(false);
+                }
+            } else {
+                const isSelected = compareWith(value!, option.value);
+                if (isSelected && !option.selected) {
+                    option.select(false);
+                } else if (!isSelected && option.selected) {
+                    option.deselect(false);
+                }
+            }
+        });
     }
 
     /**
@@ -1099,7 +1245,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         });
     }
 
-    protected _openPanelInternal(valueOnAttach = this.input().nativeElement.value) {
+    protected _openPanelInternal(valueOnAttach = this.input()?.nativeElement.value) {
         this._attachOverlay();
         // Add aria-owns attribute when the autocomplete becomes visible.
         if (this._trackedModal) {
@@ -1441,7 +1587,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         // Note that the selector here is limited to CDK overlays at the moment in order to reduce the
         // section of the DOM we need to look through. This should cover all the cases we support, but
         // the selector can be expanded if it turns out to be too narrow.
-        const modal = this.input().nativeElement.closest(
+        const modal = this.input()?.nativeElement.closest(
             'body > .cdk-overlay-container [aria-modal="true"]',
         );
 
@@ -1457,6 +1603,56 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
         addAriaReferencedId(modal, 'aria-owns', this.panelId);
         this._trackedModal = modal;
+    }
+
+    protected removeSelection(item: T, event: MouseEvent): void {
+        // Stop the event from bubbling up to prevent panel toggle
+        event.stopPropagation();
+        event.preventDefault();
+
+        if (this.disabled() || this.readOnly()) {
+            return;
+        }
+
+        const value = this.value();
+        if (Array.isArray(value)) {
+            const compareWith = this.compareWith() ?? ((a, b) => a === b);
+            const newValue = value.filter(val => !compareWith(val, item));
+            this.value.set(newValue);
+            this.onChangeCallback(newValue);
+
+            // Update the selected state of all options
+            this._updateOptionsSelectedState();
+            this._stateChanges.next();
+        }
+        afterNextRender(() => this._overlayRef?.updatePosition(), {injector: this._environmentInjector});
+    }
+
+    protected removeLastSelection(): void {
+        if (this.disabled() || this.readOnly()) {
+            return;
+        }
+
+        const value = this.value();
+        if (Array.isArray(value) && value.length > 0) {
+            const newValue = value.slice(0, -1);
+            this.value.set(newValue);
+            this.onChangeCallback(newValue);
+
+            // Update the selected state of all options
+            this._updateOptionsSelectedState();
+            this._stateChanges.next();
+            afterNextRender(() => this._overlayRef?.updatePosition(), {injector: this._environmentInjector});
+        }
+    }
+
+
+    protected isArray(o: any): boolean {
+        return Array.isArray(o);
+    }
+
+    protected valueAsArray(): T[] | null | undefined {
+        return this.value() as any;
     }
 
     // /** Clears the references to the listbox overlay element from the modal it was added to. */
