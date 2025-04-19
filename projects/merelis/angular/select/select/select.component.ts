@@ -158,6 +158,9 @@ export interface MerSelectDefaultOptions {
 
     /** Wheter icon indicators should be hidden for single-selection. */
     hideSingleSelectionIndicator?: boolean;
+
+    selectAllFilteredText?: string;
+    deselectAllText?: string;
 }
 
 /** Injection token to be used to override the default options for `mat-autocomplete`. */
@@ -201,12 +204,6 @@ const panelAnimation: AnimationTriggerMetadata = trigger('panelAnimation', [
 ]);
 
 
-interface SelectOption<T> {
-    option: T;
-    disabled?: boolean;
-    active?: boolean;
-}
-
 @Directive({
     selector: "ng-template[merSelectTriggerDef]",
     standalone: true,
@@ -221,6 +218,16 @@ export class MerSelectTriggerDef {
     standalone: true,
 })
 export class MerSelectOptionDef {
+    constructor(public templateRef: TemplateRef<any>) {
+    }
+}
+
+
+@Directive({
+    selector: "ng-template[merSelectMultiActionsDef]",
+    standalone: true,
+})
+export class MerSelectMultiActionsDef {
     constructor(public templateRef: TemplateRef<any>) {
     }
 }
@@ -264,6 +271,9 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     readonly canClear = input(true, {transform: booleanAttribute});
     readonly alwaysIncludesSelected = input(false, {transform: booleanAttribute});
     readonly autoActiveFirstOption = input(true, {transform: booleanAttribute});
+    readonly showMultiSelectActions = input(false, {transform: booleanAttribute});
+    readonly selectAllFilteredText = input<string>();
+    readonly deselectAllText = input<string>();
     readonly debounceTime = input(100, {transform: numberAttribute});
     readonly panelOffsetY = input(0, {transform: numberAttribute});
     readonly compareWith = input<Comparable<T>>();
@@ -325,6 +335,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     protected readonly input = viewChild<ElementRef<HTMLInputElement>>("textinput");
     protected readonly triggerTemplate = contentChild(MerSelectTriggerDef);
     protected readonly optionTemplate = contentChild(MerSelectOptionDef);
+    protected readonly multiActionsTemplate = contentChild(MerSelectMultiActionsDef);
 
     protected readonly viewChildOptions = viewChildren(MerOption<T>);
     protected readonly viewChildOptionGroups = viewChildren(MER_OPTION_GROUP);
@@ -348,6 +359,21 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         }
         return true;
     })
+
+    protected computedSelectAllFilteredText = computed(()=>{
+        let text = this.selectAllFilteredText();
+        if (!text){
+          text  = (this._defaults?.selectAllFilteredText) ?? 'Select all filtered';
+        }
+        return text;
+    });
+    protected computedDeselectAllText = computed(()=>{
+        let text = this.deselectAllText();
+        if (!text){
+            text  = (this._defaults?.deselectAllText) ?? 'Deselect all';
+        }
+        return text;
+    });
 
     get empty(): boolean {
         return !this.hasValue();
@@ -518,6 +544,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     _animationDone = new EventEmitter<AnimationEvent>();
     /** Element for the panel containing the autocomplete options. */
     protected readonly panel = viewChild.required<ElementRef>("panel");
+    protected readonly multiactionspanel = viewChild<ElementRef>("multiactionspanel");
 
     private _optionsSubscription = new Subscription();
 
@@ -1533,6 +1560,11 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         } else if (this.panel()) {
             const option = this.renderedOptions()[index];
             if (option) {
+                const panelPadding = 8;
+                let multiactionspanelHeight = 0;
+                if (this.multiactionspanel()){
+                    multiactionspanelHeight = this.multiactionspanel()?.nativeElement?.offsetHeight ?? 0;
+                }
                 const element = option._getHostElement();
                 const newScrollPosition = _getOptionScrollPosition(
                     element.offsetTop,
@@ -1541,7 +1573,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
                     this.panel().nativeElement.offsetHeight,
                 );
 
-                this._setScrollTop(newScrollPosition);
+                this._setScrollTop(newScrollPosition - multiactionspanelHeight - panelPadding);
             }
         }
     }
@@ -1558,7 +1590,8 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
     /** Returns the panel's scrollTop. */
     protected _getScrollTop(): number {
-        return this.panel() ? this.panel().nativeElement.scrollTop : 0;
+
+        return (this.panel() ? this.panel().nativeElement.scrollTop : 0);
     }
 
     /**
@@ -1646,13 +1679,50 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         }
     }
 
+    selectAllFiltered(): void {
+        if (!this.multipleSelection()) return;
+
+        const allOptions = this.filteredOptions();
+        const validOptions = allOptions.filter(opt => !this.isOptionDisabled(opt));
+        if (validOptions.length === 0) {
+            return;
+        }
+
+        const currentValue = this.value();
+        let newValue: T[];
+        if (!Array.isArray(currentValue)) {
+            newValue = isNotPresent(currentValue) ? [] : [currentValue as T];
+        } else {
+            newValue = [...currentValue];
+        }
+
+        const compareWith = this.compareWith() ?? ((a, b) => a === b);
+        validOptions.forEach(opt => {
+            const index = newValue.findIndex(item => compareWith(item, opt));
+            if (index == -1) {
+                newValue.push(opt);
+            }
+        });
+        this.value.set(newValue);
+        this.onChangeCallback(this.value());
+        this._updateOptionsSelectedState();
+        this._stateChanges.next();
+        afterNextRender(() => this._overlayRef?.updatePosition(), {injector: this._environmentInjector});
+    }
+
+    deselectAll(): void {
+        if (!this.multipleSelection()) return;
+
+        this.value.set([]);
+        this.onChangeCallback(this.value());
+        this._updateOptionsSelectedState();
+        this._stateChanges.next();
+        afterNextRender(() => this._overlayRef?.updatePosition(), {injector: this._environmentInjector});
+    }
+
 
     protected isArray(o: any): boolean {
         return Array.isArray(o);
-    }
-
-    protected valueAsArray(): T[] | null | undefined {
-        return this.value() as any;
     }
 
     // /** Clears the references to the listbox overlay element from the modal it was added to. */

@@ -15,12 +15,15 @@
 <div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
     <mat-form-field>
         <mat-label>Colors</mat-label>
-        <mer-select merSelectFormField [dataSource]="colors" [multiple]="true" placeholder="Select a color" #c></mer-select>
+        <mer-select merSelectFormField [dataSource]="colors" multiple [showMultiSelectActions]="true"
+                    placeholder="Select your favorite colors" #c></mer-select>
     </mat-form-field>
     <div>
         {{c.value() | json}}
     </div>
+</div>
 
+<div style="display: grid; grid: auto-flow / 1fr 1fr 1fr; gap: 1em;">
     <mat-form-field>
         <mat-label>Person</mat-label>
         <mer-select merSelectFormField [dataSource]="data" [displayWith]="displayPersonWith"></mer-select>

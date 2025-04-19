@@ -5,14 +5,14 @@
 
 @include mer-select.default;
 
-div.mer-select-panel {
+div.mer-select-panel-wrapper {
     display: flex;
     flex-direction: column;
     width: 100%; // Ensures that the panel matches the overlay width.
     max-height: 256px; // Prevents lists with a lot of option from growing too high.
     visibility: hidden;
     transform-origin: center top;
-    overflow: auto;
+
     padding: 8px 0;
     box-sizing: border-box;
 
@@ -22,6 +22,34 @@ div.mer-select-panel {
     border-radius: var(--mer-select-panel-border-radius, 8px);
     box-shadow: var(--mer-select-panel-box-shadow,  rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px);
     background-color: var(--mer-select-panel-background-color, #ffffff);
+
+    .mer-select-panel{
+        box-sizing: border-box;
+        overflow: auto;
+    }
+
+    .mer-select-multiple-actions{
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: row;
+        gap: 16px;
+        min-height: var(--mer-select-multiple-actions-min-height, 48px);
+        padding: var(--mer-select-multiple-actions-padding, 8px);
+        color: var(--mer-select-multiple-actions-color, #605e5e);
+        text-decoration: var(--mer-select-multiple-actions-text-transform);
+
+        background-color: var(--mer-select-panel-background-color, #ffffff);
+        font-family: var(--mer-select-multiple-actions-font, var(--mer-select-font)), system-ui, Roboto, sans-serif;
+        font-size: var(--mer-select-multiple-actions-font, var(--mer-select-font-size, .8em));
+        font-weight: var(--mer-select-multiple-actions-font-weight, normal);
+        .mer-select-multiple-action{
+            cursor: pointer;
+        }
+        .mer-select-multiple-action:hover{
+            text-decoration: var(--mer-select-multiple-actions-text-transform-hover, underline);
+
+        }
+    }
 
 
     @include cdk.high-contrast(active, off) {
@@ -48,4 +76,8 @@ div.mer-select-panel {
         visibility: hidden;
         pointer-events: none;
     }
+}
+
+div.mer-select-panel-wrapper.with-select-actions {
+    padding: 0 0 8px 0;
 }
