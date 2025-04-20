@@ -8,15 +8,16 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "deploy": "ng build --configuration production --base-href /merelis-showcase/ && npx angular-cli-ghpages --dir=dist/merelis-showcase/browser"
+    "deploy": "ng build demo --configuration production --base-href /angular-components/ && npx angular-cli-ghpages --dir=dist/demo/browser"
   },
   "private": false,
   "repository": {
       "type": "git",
       "url": "https://github.com/jean-merelis/angular-components.git"
   },
+  "homepage": "https://jean-merelis.github.io/angular-components",
   "bugs": {
-      "url": "https://github.com/jean-merelis/angular-components/issues"
+    "url": "https://github.com/jean-merelis/angular-components/issues"
   },
   "dependencies": {
     "@angular/animations": "^19.2.4",

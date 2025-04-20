@@ -103,7 +103,7 @@
             }
           }
         },
-        "merelis-showcase": {
+        "demo": {
           "projectType": "application",
           "schematics": {
             "@schematics/angular:component": {
@@ -117,8 +117,8 @@
             "build": {
               "builder": "@angular-devkit/build-angular:application",
               "options": {
-                "baseHref": "/merelis-showcase/",
-                "outputPath": "dist/merelis-showcase",
+                "baseHref": "/angular-components/",
+                "outputPath": "dist/demo",
                 "index": "projects/demo/src/index.html",
                 "browser": "projects/demo/src/main.ts",
                 "polyfills": [
@@ -170,10 +170,10 @@
               "builder": "@angular-devkit/build-angular:dev-server",
               "configurations": {
                 "production": {
-                  "buildTarget": "merelis-showcase:build:production"
+                  "buildTarget": "demo:build:production"
                 },
                 "development": {
-                  "buildTarget": "merelis-showcase:build:development"
+                  "buildTarget": "demo:build:development"
                 }
               },
               "defaultConfiguration": "development"
