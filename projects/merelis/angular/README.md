@@ -16,7 +16,7 @@ Currently, the library provides the following components:
 
 ### MerSelectComponent
 
-An advanced select component with filtering and typeahead capabilities. Supports single or multipleSelection selection, full customization, reactive forms integration, and conditional rendering.
+An advanced select component with filtering and typeahead capabilities. Supports single or multiple selection, full customization, reactive forms integration, and conditional rendering.
 
 ### MerProgressBar
 
@@ -85,7 +85,7 @@ The `MerSelectComponent` offers a robust alternative to the native HTML select, 
 | readOnly | boolean | false | Sets the component as read-only |
 | disableSearch | boolean | false | Disables text search functionality |
 | disableOpeningWhenFocusedByKeyboard | boolean | false | Prevents the panel from opening automatically when focused via keyboard |
-| multipleSelection | boolean | false | Allows multipleSelection selection |
+| multiple | boolean | false | Allows multiple selection |
 | canClear | boolean | true | Allows clearing the selection |
 | alwaysIncludesSelected | boolean | false | Always includes the selected item in the dropdown, even if it doesn't match the filter. **Note: Only effective when using an array as dataSource, not when using a custom SelectDataSource.** |
 | autoActiveFirstOption | boolean | true | Automatically activates the first option when the panel is opened |
@@ -224,7 +224,7 @@ async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
         if (criteria.selected) {
             const results = [...filteredResults];
             
-            // For multipleSelection selection
+            // For multiple selection
             if (Array.isArray(criteria.selected)) {
                 criteria.selected.forEach(selectedItem => {
                     // Check if the item is already in the results
@@ -313,7 +313,6 @@ export class PersonService {
 
 export class PersonDataSource implements SelectDataSource<Person> {
     private service: PersonService;
-    private viewerSubscription?: Subscription;
     private data = new BehaviorSubject<Person[]>([]);
     private loading$ = new BehaviorSubject<boolean>(false);
 
@@ -321,25 +320,21 @@ export class PersonDataSource implements SelectDataSource<Person> {
         this.service = service;
     }
 
-    // Called when the component connects to this data source
     connect(): Observable<Person[]> {
         return this.data.asObservable();
     }
 
-    // Called when the component disconnects from this data source
     disconnect(): void {
-        this.viewerSubscription?.unsubscribe();
         this.loading$.complete();
         this.data.complete();
     }
 
-    // The component wil observes this loading state to show a progress bar.
     loading(): Observable<boolean> {
         return this.loading$.asObservable();
     }
 
-    // The component will invoke this method whenever the input changes, respecting the debounceTime
     async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
+
         if (criteria.searchText) {
             this.loading$.next(true);
             try {
@@ -489,6 +484,312 @@ The `MerSelectComponent` allows customization of the trigger (clickable area) an
 </mer-select>
 ```
 
+## Testing with Component Harnesses
+
+The library provides testing harnesses for the `MerSelectComponent` and its options, making it easier to test components that use these elements. These harnesses are built on top of Angular's Component Test Harnesses (CDK Testing) and provide a clean, implementation-detail-free way to interact with components in tests.
+
+### Installation
+
+The testing harnesses are included in the package and can be imported from:
+
+```typescript
+import { MerSelectHarness } from '@merelis/angular/select/testing';
+import { MerSelectOptionHarness } from '@merelis/angular/select/testing';
+```
+
+### Setting Up Component Test Harnesses
+
+To use the harnesses in your tests, you'll need to set up the Angular test environment with the harness environment:
+
+```typescript
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MerSelectHarness } from '@merelis/angular/select/testing';
+
+describe('YourComponent', () => {
+  let fixture: ComponentFixture<YourComponent>;
+  let component: YourComponent;
+  let loader: HarnessLoader;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [YourComponent],
+      // Include other necessary imports here
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(YourComponent);
+    component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
+  });
+
+  // Tests go here
+});
+```
+
+### MerSelectHarness API
+
+The `MerSelectHarness` provides methods to interact with and query the state of a `MerSelectComponent`:
+
+| Method | Description |
+|--------|-------------|
+| `static with(filters: MerSelectHarnessFilters)` | Gets a `HarnessPredicate` that can be used to find a select with specific attributes |
+| `click()` | Clicks on the select trigger to open/close the panel |
+| `clickOnClearIcon()` | Clicks on the clear icon to clear the selection |
+| `focus()` | Focuses the select input |
+| `blur()` | Removes focus from the select input |
+| `isFocused()` | Gets whether the select is focused |
+| `getValue()` | Gets the text value displayed in the select trigger |
+| `isDisabled()` | Gets whether the select is disabled |
+| `getSearchText()` | Gets the current text in the search input |
+| `setTextSearch(value: string)` | Sets the text in the search input |
+| `isOpen()` | Gets whether the options panel is open |
+| `getOptions(filters?: Omit<SelectOptionHarnessFilters, 'ancestor'>)` | Gets the options inside the panel |
+| `clickOptions(filters: SelectOptionHarnessFilters)` | Clicks the option(s) matching the given filters |
+
+### MerSelectOptionHarness API
+
+The `MerSelectOptionHarness` provides methods to interact with and query the state of a select option:
+
+| Method | Description |
+|--------|-------------|
+| `static with(filters: SelectOptionHarnessFilters)` | Gets a `HarnessPredicate` that can be used to find an option with specific attributes |
+| `click()` | Clicks the option |
+| `getText()` | Gets the text of the option |
+| `isDisabled()` | Gets whether the option is disabled |
+| `isSelected()` | Gets whether the option is selected |
+| `isActive()` | Gets whether the option is active |
+| `isMultiple()` | Gets whether the option is in multiple selection mode |
+
+### Example Test
+
+Here's an example of testing a component that uses `MerSelectComponent`:
+
+```typescript
+import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { MerSelectHarness, MerSelectOptionHarness } from '@merelis/angular/select/testing';
+import { MerSelectComponent } from '@merelis/angular/select';
+
+@Component({
+  template: `
+    <mer-select
+      [dataSource]="fruits"
+      [(value)]="selectedFruit"
+      [placeholder]="'Select a fruit'">
+    </mer-select>
+  `,
+  standalone: true,
+  imports: [MerSelectComponent]
+})
+class TestComponent {
+  fruits = ['Apple', 'Banana', 'Orange', 'Strawberry'];
+  selectedFruit: string | null = null;
+}
+
+describe('TestComponent', () => {
+  let fixture: ComponentFixture<TestComponent>;
+  let component: TestComponent;
+  let loader: HarnessLoader;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [TestComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(TestComponent);
+    component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
+    fixture.detectChanges();
+  });
+
+  it('should open the select and select an option', async () => {
+    // Get the select harness
+    const select = await loader.getHarness(MerSelectHarness);
+    
+    // Check initial state
+    expect(await select.getValue()).toBe('');
+    expect(await select.isOpen()).toBe(false);
+    
+    // Open the select
+    await select.click();
+    expect(await select.isOpen()).toBe(true);
+    
+    // Get all options
+    const options = await select.getOptions();
+    expect(options.length).toBe(4);
+    
+    // Click the "Banana" option
+    await select.clickOptions({ text: 'Banana' });
+    
+    // Check that the panel is closed after selection
+    expect(await select.isOpen()).toBe(false);
+    
+    // Check that the value is updated
+    expect(await select.getValue()).toBe('Banana');
+    expect(component.selectedFruit).toBe('Banana');
+  });
+
+  it('should filter options based on search text', async () => {
+    const select = await loader.getHarness(MerSelectHarness);
+    
+    // Open the select
+    await select.click();
+    
+    // Enter search text
+    await select.setTextSearch('ber');
+    
+    // Get filtered options
+    const options = await select.getOptions();
+    expect(options.length).toBe(1);
+    expect(await options[0].getText()).toBe('Strawberry');
+    
+    // Select the filtered option
+    await options[0].click();
+    expect(await select.getValue()).toBe('Strawberry');
+  });
+});
+```
+
+### Testing with Complex Data Structures
+
+When using objects as options, you can leverage the harness methods to test more complex scenarios:
+
+```typescript
+import { Component } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { MerSelectHarness } from '@merelis/angular/select/testing';
+import { MerSelectComponent } from '@merelis/angular/select';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+@Component({
+  template: `
+    <mer-select
+      [dataSource]="users"
+      [(value)]="selectedUser"
+      [displayWith]="displayUser"
+      [compareWith]="compareUsers"
+      [placeholder]="'Select a user'">
+    </mer-select>
+  `,
+  standalone: true,
+  imports: [MerSelectComponent]
+})
+class UserSelectComponent {
+  users: User[] = [
+    { id: 1, name: 'John Doe', email: 'john@example.com' },
+    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+    { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+  ];
+  selectedUser: User | null = null;
+  
+  displayUser(user: User): string {
+    return user?.name || '';
+  }
+  
+  compareUsers(user1: User, user2: User): boolean {
+    return user1?.id === user2?.id;
+  }
+}
+
+describe('UserSelectComponent', () => {
+  let fixture: ComponentFixture<UserSelectComponent>;
+  let component: UserSelectComponent;
+  let loader: HarnessLoader;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [UserSelectComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(UserSelectComponent);
+    component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
+    fixture.detectChanges();
+  });
+
+  it('should select a user by name and update the component model', async () => {
+    const select = await loader.getHarness(MerSelectHarness);
+    
+    // Open the select
+    await select.click();
+    
+    // Click the option with Jane's name
+    await select.clickOptions({ text: 'Jane Smith' });
+    
+    // Check that the select shows the correct text
+    expect(await select.getValue()).toBe('Jane Smith');
+    
+    // Check that the component model is updated with the correct object
+    expect(component.selectedUser).toEqual(component.users[1]);
+    expect(component.selectedUser?.id).toBe(2);
+  });
+});
+```
+
+### Testing Multiple Selection
+
+You can also test the multiple selection mode of the `MerSelectComponent`:
+
+```typescript
+@Component({
+  template: `
+    <mer-select
+      [dataSource]="colors"
+      [(value)]="selectedColors"
+      [multiple]="true"
+      [placeholder]="'Select colors'">
+    </mer-select>
+  `,
+  standalone: true,
+  imports: [MerSelectComponent]
+})
+class ColorSelectComponent {
+  colors = ['Red', 'Green', 'Blue', 'Yellow', 'Purple'];
+  selectedColors: string[] = [];
+}
+
+describe('ColorSelectComponent', () => {
+  // Test setup...
+
+  it('should support multiple selection', async () => {
+    const select = await loader.getHarness(MerSelectHarness);
+    
+    // Open the select
+    await select.click();
+    
+    // Select multiple options
+    await select.clickOptions({ text: 'Red' });
+    await select.clickOptions({ text: 'Blue' });
+    await select.clickOptions({ text: 'Yellow' });
+    
+    // Check component model
+    expect(component.selectedColors).toEqual(['Red', 'Blue', 'Yellow']);
+    
+    // Verify that the selected options are marked as selected
+    const options = await select.getOptions();
+    for (const option of options) {
+      const text = await option.getText();
+      const isSelected = await option.isSelected();
+      
+      if (['Red', 'Blue', 'Yellow'].includes(text)) {
+        expect(isSelected).toBe(true);
+      } else {
+        expect(isSelected).toBe(false);
+      }
+    }
+  });
+});
+```
+
 ## Integration with Angular Material
 The MerSelectComponent can be integrated with Angular Material's mat-form-field component through the @merelis/angular-material package. This integration allows you to use the select component within Material's form field, benefiting from features like floating labels, hints, and error messages.
 
@@ -579,41 +880,40 @@ The components can be customized using CSS variables. Below are the available va
   --mer-select-letter-spacing: normal;
   --mer-select-min-height: 32px;
   --mer-select-side-padding: 8px;
-    --mer-select-input-height ,100%;
-    --mer-select-input-width ,100%
-    --mer-select-side-padding, 2px
-    --mer-select-trigger-wrapper-gap, 4px;
+  --mer-select-input-height: 100%;
+  --mer-select-input-width: 100%;
+  --mer-select-trigger-wrapper-gap: 4px;
     
     
   // multiple select  
-    --mer-select-multiple-trigger-wrapper-gap: 4px;
-    --mer-select-multiple-side-padding: 2px;
-    --mer-select-multiple-input-min-width: 33%;
-    --mer-select-multiple-input-height: 24px;
-    --mer-select-multiple-input-padding: 0 4px;
-    --mer-select-multiple-values-gap: 4px;
-    --mer-select-multiple-values-padding: 0;
-    --mer-select-chip-background-color: #e6e6e6;
-    --mer-select-chip-border-radius: 8px;
-    --mer-select-chip-padding: 2px 2px 2px 8px;
-    --mer-select-chip-font-size: 0.875rem;
+  --mer-select-multiple-trigger-wrapper-gap: 4px;
+  --mer-select-multiple-side-padding: 2px;
+  --mer-select-multiple-input-min-width: 33%;
+  --mer-select-multiple-input-height: 24px;
+  --mer-select-multiple-input-padding: 0 4px;
+  --mer-select-multiple-values-gap: 4px;
+  --mer-select-multiple-values-padding: 0;
+  --mer-select-chip-background-color: #e6e6e6;
+  --mer-select-chip-border-radius: 8px;
+  --mer-select-chip-padding: 2px 2px 2px 8px;
+  --mer-select-chip-font-size: 0.875rem;
 
-    --mer-select-chip-remove-cursor: pointer;
-    --mer-select-chip-remove-margin-left: 4px;
-    --mer-select-chip-remove-font-size: 1rem;
-    --mer-select-chip-remove-line-height: 1rem;
-    --mer-select-chip-remove-font-weight: normal;
-    --mer-select-chip-remove-text-color: #000;
-    --mer-select-chip-remove-bg-color: #d1d1d1;
-    --mer-select-chip-remove-border-radius: 9999px;
-    --mer-select-chip-remove-padding: 0;
-    --mer-select-chip-remove-width: 12px;
-    --mer-select-chip-remove-height: 12px;
-    --mer-select-chip-remove-opacity: .5;
+  --mer-select-chip-remove-cursor: pointer;
+  --mer-select-chip-remove-margin-left: 4px;
+  --mer-select-chip-remove-font-size: 1rem;
+  --mer-select-chip-remove-line-height: 1rem;
+  --mer-select-chip-remove-font-weight: normal;
+  --mer-select-chip-remove-text-color: #000;
+  --mer-select-chip-remove-bg-color: #d1d1d1;
+  --mer-select-chip-remove-border-radius: 9999px;
+  --mer-select-chip-remove-padding: 0;
+  --mer-select-chip-remove-width: 12px;
+  --mer-select-chip-remove-height: 12px;
+  --mer-select-chip-remove-opacity: .5;
 
-    --mer-select-chip-remove-text-color-hover: white;
-    --mer-select-chip-remove-bg-color-hover: #505050;
-    --mer-select-chip-remove-opacity-hover: 1;
+  --mer-select-chip-remove-text-color-hover: white;
+  --mer-select-chip-remove-bg-color-hover: #505050;
+  --mer-select-chip-remove-opacity-hover: 1;
     
   
   // Colors and states

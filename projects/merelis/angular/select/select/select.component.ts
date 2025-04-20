@@ -19,7 +19,7 @@ import {
     transition,
     trigger
 } from '@angular/animations';
-import { ActiveDescendantKeyManager, addAriaReferencedId, removeAriaReferencedId } from '@angular/cdk/a11y';
+import { _IdGenerator, ActiveDescendantKeyManager, addAriaReferencedId, removeAriaReferencedId } from '@angular/cdk/a11y';
 import { Directionality } from "@angular/cdk/bidi";
 import { SelectionModel } from "@angular/cdk/collections";
 import { hasModifierKey } from "@angular/cdk/keycodes";
@@ -27,7 +27,7 @@ import {
     ConnectedPosition,
     FlexibleConnectedPositionStrategy,
     Overlay,
-    OverlayConfig,
+    OverlayConfig, OverlayModule,
     OverlayRef,
     PositionStrategy,
     ScrollStrategy,
@@ -242,6 +242,7 @@ export class MerSelectMultiActionsDef {
         CommonModule,
         MerOption,
         MerProgressBar,
+        OverlayModule,
     ],
     providers: [
         {provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MerSelectComponent), multi: true}
@@ -250,10 +251,21 @@ export class MerSelectMultiActionsDef {
     host: {
         "[class.mer-select]": "true",
         "[class.focused]": "_focused",
-        "[class.disabled]": "disabled()"
+        "[class.disabled]": "disabled()",
+
+
+        "attr.autocomplete": 'off',
+        "[attr.role]": "disabled() || readOnly() ? null : 'combobox'",
+        "[attr.aria-autocomplete]": "disabled() || readOnly() ? null : 'list'",
+        "[attr.aria-activedescendant]": "(panelOpen && activeOption) ? activeOption.id : null",
+        "[attr.aria-expanded]": "disabled() || readOnly() ? null : panelOpen.toString()",
+        "[attr.aria-controls]": "(disabled() || readOnly() || !panelOpen) ? null : panelId",
+        "[attr.aria-haspopup]": 'disabled() || readOnly() ? null : "listbox"',
     }
 })
 export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit, MerOptionParentComponent {
+    /** Unique ID to be used by autocomplete trigger's "aria-owns" property. */
+    id: string = inject(_IdGenerator).getId('mer-select-');
 
     readonly dataSource = input<SelectDataSource<T> | T[]>();
     readonly value = model<T | T[] | null | undefined>();
@@ -384,9 +396,7 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
     protected readonly panelTemplate = viewChild.required<string, TemplateRef<any>>("panelTmpl", {read: TemplateRef});
     protected internalDataSource?: MerSelectDataSource<T>;
     protected _connectedDataSource?: SelectDataSource<T>;
-    protected readonly _id: string = `${_uniqueIdCounter++}`;
-    readonly id: string = `mer-select-${this._id}`;
-    protected readonly panelId: string = `mer-select-panel-${this._id}`;
+    protected readonly panelId: string = inject(_IdGenerator).getId('mer-select-panel-');
     protected readonly _aboveClass = 'mer-select-panel-above';
     protected _keyManager!: ActiveDescendantKeyManager<MerOption<T>>;
     protected _activeOptionChanges = Subscription.EMPTY;
@@ -993,35 +1003,6 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
         }
     }
 
-    //
-    // /**
-    //  * In "auto" mode, the label will animate down as soon as focus is lost.
-    //  * This causes the value to jump when selecting an option with the mouse.
-    //  * This method manually floats the label until the panel can be closed.
-    //  * @param shouldAnimate Whether the label should be animated when it is floated.
-    //  */
-    // private _floatLabel(shouldAnimate = false): void {
-    //     if (this._formField && this._formField.floatLabel === 'auto') {
-    //         if (shouldAnimate) {
-    //             this._formField._animateAndLockLabel();
-    //         } else {
-    //             this._formField.floatLabel = 'always';
-    //         }
-    //
-    //         this._manuallyFloatingLabel = true;
-    //     }
-    // }
-    //
-    // /** If the label has been manually elevated, return it to its normal state. */
-    // private _resetLabel(): void {
-    //     if (this._manuallyFloatingLabel) {
-    //         if (this._formField) {
-    //             this._formField.floatLabel = 'auto';
-    //         }
-    //         this._manuallyFloatingLabel = false;
-    //     }
-    // }
-    //
     /**
      * This method listens to a stream of panel closing actions and resets the
      * stream every time the option list changes.
@@ -1282,7 +1263,6 @@ export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDe
 
     private _attachOverlay(): void {
         let overlayRef = this._overlayRef;
-
         if (!overlayRef) {
             this._portal = new TemplatePortal(this.panelTemplate(), this._viewContainerRef, {
                 id: this.panelId,

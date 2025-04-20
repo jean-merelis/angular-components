@@ -19,7 +19,7 @@
            [readonly]="readOnly() || disableSearch()"
            [disabled]="disabled()"
            [placeholder]="(empty && placeholder() && shouldLabelFloat) ? placeholder() : ''"
-           (focusin)="_handleFocus()"
+           (focus)="_handleFocus()"
            (blur)="_handleBlur()"
            (keydown)="_handleKeydown($event)"
            (input)="_handleInput($event)"
@@ -27,9 +27,9 @@
 
     >
 } @else {
-    <div class="mer-select-trigger-wrapper mer-select-trigger multiple-select-mode"
+    <div class="mer-select-trigger-wrapper  multiple-select-mode"
          (click)="focus();_handleClick($event)">
-        <div class="mer-select-multiple-values">
+        <div class="mer-select-multiple-values mer-select-trigger">
             <div style="height:.67em;"></div>
             <ng-container [ngTemplateOutlet]="triggerTemplate()?.templateRef || defaulttrigger"
                           [ngTemplateOutletContext]="{$implicit: value()}">
@@ -40,7 +40,7 @@
                    [readonly]="readOnly() || disableSearch()"
                    [disabled]="disabled()"
                    [placeholder]="(placeholder() && shouldLabelFloat && !(readOnly() || disableSearch())) ? placeholder() : ''"
-                   (focusin)="_handleFocus()"
+                   (focus)="_handleFocus()"
                    (blur)="_handleBlur()"
                    (keydown)="_handleKeydown($event)"
                    (input)="_handleInput($event)"

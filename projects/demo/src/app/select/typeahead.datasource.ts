@@ -30,7 +30,6 @@ export class PersonService {
 
 export class PersonDataSource implements SelectDataSource<Person> {
     private service: PersonService;
-    private viewerSubscription?: Subscription;
     private data = new BehaviorSubject<Person[]>([]);
     private loading$ = new BehaviorSubject<boolean>(false);
 
@@ -43,7 +42,6 @@ export class PersonDataSource implements SelectDataSource<Person> {
     }
 
     disconnect(): void {
-        this.viewerSubscription?.unsubscribe();
         this.loading$.complete();
         this.data.complete();
     }
