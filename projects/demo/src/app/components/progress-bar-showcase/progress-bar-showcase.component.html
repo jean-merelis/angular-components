@@ -1,0 +1,101 @@
+<h2>MerProgressBar Component</h2>
+
+<div class="example">
+    <h3>Basic Usage</h3>
+    <div class="demo-area">
+        <mer-progress-bar
+            [value]="progressValue"
+            [indeterminate]="isIndeterminate">
+        </mer-progress-bar>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="progress-value">Progress Value: {{ progressValue }}</label>
+                <input
+                    id="progress-value"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    [(ngModel)]="progressValue">
+            </div>
+
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" [(ngModel)]="isIndeterminate">
+                    Indeterminate
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="code-snippet">
+        <h4>HTML</h4>
+        <pre><code>
+&lt;mer-progress-bar
+  [value]="progressValue"
+  [indeterminate]="isIndeterminate"&gt;
+&lt;/mer-progress-bar&gt;
+    </code></pre>
+
+        <h4>TypeScript</h4>
+        <pre><code>
+progressValue = 0.5;
+isIndeterminate = false;
+    </code></pre>
+    </div>
+</div>
+
+<div class="example">
+    <h3>Practical Example: Download Simulation</h3>
+    <div class="demo-area">
+        <div class="download-demo">
+            <div class="file-info">
+                <h4>example-file.pdf</h4>
+                <p>Status: {{ isDownloading ? 'Downloading...' : (downloadProgress > 0 ? 'Downloaded' : 'Ready') }}</p>
+            </div>
+
+            <mer-progress-bar
+                [value]="downloadProgress"
+                [indeterminate]="false">
+            </mer-progress-bar>
+
+            <button
+                (click)="startDownload()"
+                [disabled]="isDownloading">
+                {{ isDownloading ? 'Downloading...' : 'Start Download' }}
+            </button>
+        </div>
+    </div>
+
+    <div class="code-snippet">
+        <h4>HTML</h4>
+        <pre><code>
+&lt;div class="download-demo"&gt;
+  &lt;div class="file-info"&gt;
+    &lt;h4&gt;example-file.pdf&lt;/h4&gt;
+    &lt;p&gt;Status: {{ isDownloading ? 'Downloading...' : (downloadProgress > 0 ? 'Downloaded' : 'Ready') }}&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;mer-progress-bar
+    [value]="downloadProgress"
+    [indeterminate]="false"&gt;
+  &lt;/mer-progress-bar&gt;
+
+  &lt;button
+    (click)="startDownload()"
+    [disabled]="isDownloading"&gt;
+            {{ isDownloading ? 'Downloading...' : 'Start Download' }}
+            &lt;/button&gt;
+&lt;/div&gt;
+    </code></pre>
+
+        <h4>TypeScript</h4>
+        <pre><code>
+downloadProgress = 0;
+isDownloading = false;
+
+
+    </code></pre>
+    </div>
+</div>

@@ -1,14 +1,20 @@
-@if(shouldRun()) {
-    <mat-sidenav-container class="sidenav" >
-        <mat-sidenav mode="side" opened >
-            <mat-nav-list role="list" class="navlist">
-                <mat-list-item role="navigation" routerLink="select" routerLinkActive="active">Select</mat-list-item>
-            </mat-nav-list>
-        </mat-sidenav>
+<header>
+    <div class="container">
+        <h1>Merelis Angular Components Showcase</h1>
+        <nav>
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+            <a routerLink="/select" routerLinkActive="active">Select Component</a>
+            <a routerLink="/progress-bar" routerLinkActive="active">Progress Bar</a>
+        </nav>
+    </div>
+</header>
 
-        <mat-sidenav-container>
-            <router-outlet/>
-        </mat-sidenav-container>
+<main class="container">
+    <router-outlet></router-outlet>
+</main>
 
-    </mat-sidenav-container>
-}
+<footer>
+    <div class="container">
+        <p>© 2025 Merelis Angular Components - MIT License</p>
+    </div>
+</footer>

@@ -1,0 +1,33 @@
+<h3>Working with Objects</h3>
+<div class="demo-area">
+    <mer-select class="mer-standard"
+                [dataSource]="users"
+                [(value)]="selectedUser"
+                [displayWith]="displayUser"
+                [compareWith]="compareUsers"
+                [placeholder]="'Select a user'">
+    </mer-select>
+
+    <div class="result">
+        <p *ngIf="!selectedUser">No user selected</p>
+        <div *ngIf="selectedUser" class="user-info">
+            <p><strong>ID:</strong> {{ selectedUser!.id }}</p>
+            <p><strong>Name:</strong> {{ selectedUser!.name }}</p>
+            <p><strong>Email:</strong> {{ selectedUser!.email }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="code-snippet">
+
+    <h4>HTML</h4>
+    <textarea highlight lang="html" readonly>
+        {{htmlCode}}
+    </textarea>
+
+    <h4>TypeScript</h4>
+    <textarea highlight lang="typescript" readonly>
+        {{tsCode}}
+    </textarea>
+
+</div>

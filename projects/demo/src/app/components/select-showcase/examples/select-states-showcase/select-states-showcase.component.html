@@ -1,0 +1,35 @@
+<h3>Component States</h3>
+<div class="demo-area">
+    <div class="controls">
+        <button (click)="toggleLoading()">Toggle Loading</button>
+        <button (click)="toggleDisabled()">Toggle Disabled</button>
+        <button (click)="toggleReadOnly()">Toggle ReadOnly</button>
+    </div>
+
+    <mer-select class="mer-standard"
+        [dataSource]="basicOptions"
+        [(value)]="selectedBasicOption"
+        [placeholder]="'Select a fruit'"
+        [loading]="statesLoading"
+        [disabled]="disabledSelect"
+        [readOnly]="readOnlySelect">
+    </mer-select>
+
+    <div class="state-info">
+        <p><strong>Loading:</strong> {{ statesLoading }}</p>
+        <p><strong>Disabled:</strong> {{ disabledSelect }}</p>
+        <p><strong>ReadOnly:</strong> {{ readOnlySelect }}</p>
+    </div>
+</div>
+
+<div class="code-snippet">
+    <h4>HTML</h4>
+    <textarea highlight lang="html" readonly>
+        {{htmlCode}}
+    </textarea>
+
+    <h4>TypeScript</h4>
+    <textarea highlight lang="typescript" readonly>
+        {{tsCode}}
+    </textarea>
+</div>

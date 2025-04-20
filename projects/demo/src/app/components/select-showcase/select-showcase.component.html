@@ -1,0 +1,42 @@
+<h2>MerSelect Component</h2>
+
+<div class="tabs">
+    <button
+        *ngFor="let tab of tabs"
+        [class.active]="activeTab === tab.id"
+        (click)="setTab(tab.id)">
+        {{ tab.title }}
+    </button>
+</div>
+
+<div class="example-container" [ngSwitch]="activeTab">
+
+    <!-- Basic Usage -->
+    <div *ngSwitchCase="'basic'" class="example">
+        <app-select-basic-showcase></app-select-basic-showcase>
+    </div>
+
+    <!-- Object Selection -->
+    <div *ngSwitchCase="'objects'" class="example">
+        <app-select-objects-showcase></app-select-objects-showcase>
+    </div>
+
+    <!-- Multiple Selection -->
+    <div *ngSwitchCase="'multiple'" class="example">
+        <app-select-multi-showcase></app-select-multi-showcase>
+    </div>
+
+    <!-- Component States -->
+    <div *ngSwitchCase="'states'" class="example">
+        <app-select-states-showcase></app-select-states-showcase>
+    </div>
+
+    <!-- Custom Templates -->
+    <div *ngSwitchCase="'custom'" class="example">
+        <app-select-custom-template-showcase></app-select-custom-template-showcase>
+    </div>
+
+    <div *ngSwitchCase="'material'" class="example">
+        <app-select-material-showcase></app-select-material-showcase>
+    </div>
+</div>

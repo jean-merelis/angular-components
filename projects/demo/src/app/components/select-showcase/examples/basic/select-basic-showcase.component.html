@@ -1,0 +1,24 @@
+<h3>Basic Usage</h3>
+<div class="demo-area">
+    <mer-select class="mer-standard"
+                [dataSource]="basicOptions"
+                [(value)]="selectedBasicOption"
+                [placeholder]="'Select a fruit'">
+    </mer-select>
+
+    <div class="result">
+        <p>Selected value: <strong>{{ selectedBasicOption || 'None' }}</strong></p>
+    </div>
+</div>
+
+<div class="code-snippet">
+    <h4>HTML</h4>
+    <textarea highlight lang="html" readonly>
+        {{htmlCode}}
+    </textarea>
+
+    <h4>TypeScript</h4>
+    <textarea highlight lang="typescript" readonly>
+        {{tsCode}}
+    </textarea>
+</div>

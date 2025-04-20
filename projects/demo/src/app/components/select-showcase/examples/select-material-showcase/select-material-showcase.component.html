@@ -1,0 +1,32 @@
+<h3>Angular Material integration</h3>
+
+<div class="demo-area">
+    <div style="display: flex; gap: 12px">
+
+
+        <mat-form-field appearance="fill">
+            <mat-label>Colors</mat-label>
+            <mer-select merSelectFormField [dataSource]="colors" [(value)]="color"></mer-select>
+        </mat-form-field>
+
+
+        <mat-form-field appearance="outline">
+            <mat-label>Colors</mat-label>
+            <mer-select merSelectFormField [dataSource]="colors" [(value)]="color"></mer-select>
+        </mat-form-field>
+
+    </div>
+</div>
+
+
+<div class="code-snippet">
+    <h4>HTML</h4>
+    <textarea highlight lang="html" readonly>
+        {{htmlCode}}
+    </textarea>
+
+    <h4>Typescript</h4>
+    <textarea highlight lang="typescript" readonly>
+        {{tsCode}}
+    </textarea>
+</div>

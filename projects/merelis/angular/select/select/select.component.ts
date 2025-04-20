@@ -127,14 +127,14 @@ export const MER_SELECT_SCROLL_STRATEGY = new InjectionToken<() => ScrollStrateg
         providedIn: 'root',
         factory: () => {
             const overlay = inject(Overlay);
-            return () => overlay.scrollStrategies.close();
+            return () => overlay.scrollStrategies.reposition();
         },
     },
 );
 
 /** @docs-private */
 export function MER_SELECT_SCROLL_STRATEGY_FACTORY(overlay: Overlay): () => ScrollStrategy {
-    return () => overlay.scrollStrategies.close();
+    return () => overlay.scrollStrategies.reposition();
 }
 
 /** @docs-private */

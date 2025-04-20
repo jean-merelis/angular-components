@@ -1,0 +1,49 @@
+<h3>Custom Templates</h3>
+<div class="demo-area">
+    <mer-select class="mer-standard custom-select"
+                [dataSource]="users"
+                [(value)]="selectedUser"
+                [compareWith]="compareUsers"
+                [placeholder]="'Select a user'">
+
+        <!-- Custom trigger template -->
+        <ng-template merSelectTriggerDef let-user>
+            @if (user) {
+            <div class="custom-trigger">
+                <div class="user-trigger">
+                    <span class="initials">{{ user.name.charAt(0) }}</span>
+                    <span class="name">{{ user.name }}</span>
+                </div>
+            </div>
+            }
+        </ng-template>
+
+        <!-- Custom option template -->
+        <ng-template merSelectOptionDef let-option>
+            <div class="custom-option">
+                <span class="initials">{{ option.name.charAt(0) }}</span>
+                <div class="user-details">
+                    <div class="name">{{ option.name }}</div>
+                    <div class="email">{{ option.email }}</div>
+                </div>
+            </div>
+        </ng-template>
+    </mer-select>
+</div>
+
+<div class="code-snippet">
+    <h4>HTML</h4>
+    <textarea highlight lang="html" readonly>
+        {{htmlCode}}
+    </textarea>
+
+    <h4>TypeScript</h4>
+    <textarea highlight lang="typescript" readonly>
+        {{tsCode}}
+    </textarea>
+
+    <h4>SCSS</h4>
+    <textarea highlight lang="scss" readonly>
+        {{cssCode}}
+    </textarea>
+</div>

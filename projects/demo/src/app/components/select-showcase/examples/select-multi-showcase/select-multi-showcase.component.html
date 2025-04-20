@@ -1,0 +1,40 @@
+<h3>Multiple Selection</h3>
+<div class="demo-area">
+    <div style="display: flex; gap: 12px;">
+        <mer-select class="mer-standard"
+                    [dataSource]="colors"
+                    [(value)]="selectedColors"
+                    [multiple]="true"
+                    [placeholder]="'Select colors'">
+        </mer-select>
+
+        <mer-select class="mer-standard"
+                    [dataSource]="colors"
+                    [(value)]="selectedColors"
+                    [multiple]="true"
+                    [showMultiSelectActions]="true"
+                    [placeholder]="'Select colors'">
+        </mer-select>
+    </div>
+    <div class="result">
+        <p *ngIf="selectedColors.length === 0">No colors selected</p>
+        <div *ngIf="selectedColors.length > 0" class="selected-colors">
+            <p>Selected colors:</p>
+            <ul>
+                <li *ngFor="let color of selectedColors">{{ color }}</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="code-snippet">
+    <h4>HTML</h4>
+    <textarea highlight lang="html" readonly>
+        {{htmlCode}}
+    </textarea>
+
+    <h4>TypeScript</h4>
+    <textarea highlight lang="typescript" readonly>
+        {{tsCode}}
+    </textarea>
+</div>
