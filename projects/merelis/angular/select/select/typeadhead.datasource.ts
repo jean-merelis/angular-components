@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { catchError, finalize, map, switchMap } from 'rxjs/operators';
-import { FilterCriteria, SelectDataSource } from '@merelis/angular/select';
+import { FilterCriteria, SelectDataSource } from './select.datasource';
 
 /**
  * Interface for search services that can be used with TypeaheadDataSource
