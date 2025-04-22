@@ -277,126 +277,252 @@ private compareItems(a: Person, b: Person): boolean {
     - Implementing complex filtering logic
     - Showing loading indicators during asynchronous operations
 
-## Typeahead Functionality with Custom DataSource
+## Typeahead Functionality with TypeaheadDataSource
 
-The `MerSelectComponent` supports typeahead functionality, allowing you to search for options as you type. You can implement this by creating a custom `SelectDataSource` that fetches filtered data based on user input.
+The `MerSelectComponent` supports typeahead functionality, allowing you to search for options as you type. The library provides a generic `TypeaheadDataSource` implementation that handles common typeahead requirements including search request cancellation, loading states, and result management.
 
-### Creating a Custom DataSource
+### TypeaheadSearchService Interface
 
-A custom data source gives you complete control over how options are loaded and filtered. This is particularly useful for:
-
-- Loading data from an API
-- Implementing server-side filtering
-- Adding debounce and loading states
-- Supporting large datasets without performance issues
-
-### Example: PersonDataSource
-
-Here's an example of a custom data source that fetches person data based on user input:
+First, implement the `TypeaheadSearchService` interface to define how search operations will be performed:
 
 ```typescript
-interface Person {
-    name: string;
-}
-
-@Injectable({providedIn: "root"})
-export class PersonService {
-    // Simulates an HTTP call to an API
-    async search(query: string): Promise<Person[]> {
-        return new Promise<Person[]>((resolve) => {
-            setTimeout(() => {
-                // In a real application, this would be an API call
-                const filtered = DATASET.filter(person => 
-                    person.name.toLowerCase().startsWith(query.toLowerCase())
-                );
-                resolve(filtered);
-            }, 500)
-        })
-    }
-}
-
-export class PersonDataSource implements SelectDataSource<Person> {
-    private service: PersonService;
-    private data = new BehaviorSubject<Person[]>([]);
-    private loading$ = new BehaviorSubject<boolean>(false);
-
-    constructor(service: PersonService) {
-        this.service = service;
-    }
-
-    connect(): Observable<Person[]> {
-        return this.data.asObservable();
-    }
-
-    disconnect(): void {
-        this.loading$.complete();
-        this.data.complete();
-    }
-
-    loading(): Observable<boolean> {
-        return this.loading$.asObservable();
-    }
-
-    async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
-
-        if (criteria.searchText) {
-            this.loading$.next(true);
-            try {
-                const result = await this.service.search(criteria.searchText);
-                this.data.next(result);
-            } finally {
-                this.loading$.next(false);
-            }
-        }
-    }
+export interface TypeaheadSearchService<T> {
+  /**
+   * Search method that takes a query string and returns an Observable of results
+   * @param query The search query string
+   * @returns Observable of search results
+   */
+  search(query: string): Observable<T[]>;
 }
 ```
 
-### Using the Custom DataSource
+### Using the TypeaheadDataSource
 
-Here's how to use your custom data source with the `MerSelectComponent`:
+The `TypeaheadDataSource` provides a robust solution for typeahead functionality with automatic cancellation of previous requests, which is essential for a smooth user experience.
+
+#### Implementation
 
 ```typescript
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { TypeaheadSearchService, TypeaheadDataSource } from '@merelis/angular/select';
+
+// Define your data model
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// Implement TypeaheadSearchService for your data type
+@Injectable({ providedIn: 'root' })
+export class UserSearchService implements TypeaheadSearchService<User> {
+  constructor(private http: HttpClient) {}
+  
+  search(query: string): Observable<User[]> {
+    // Real implementation would use HttpClient
+    return this.http.get<User[]>(`/api/users?q=${query}`);
+    
+    // Example of a mock implementation for testing:
+    /*
+    const users = [
+      { id: 1, name: 'John Smith', email: 'john@example.com' },
+      { id: 2, name: 'Mary Johnson', email: 'mary@example.com' },
+      { id: 3, name: 'Peter Williams', email: 'peter@example.com' }
+    ];
+    
+    const results = query 
+      ? users.filter(user => user.name.toLowerCase().includes(query.toLowerCase()))
+      : users;
+      
+    return of(results).pipe(delay(300)); // Simulate network delay
+    */
+  }
+}
+```
+
+#### Usage in a Component
+
+```typescript
+import { Component, OnDestroy } from '@angular/core';
+import { MerSelectComponent } from '@merelis/angular/select';
+import { TypeaheadDataSource } from '@merelis/angular/select';
+import { UserSearchService, User } from './user-search.service';
+
 @Component({
-  selector: 'app-typeahead-example',
+  selector: 'app-user-search',
+  standalone: true,
+  imports: [MerSelectComponent],
   template: `
     <mer-select
-      [(value)]="selectedPerson"
-      [dataSource]="personDataSource"
-      [displayWith]="displayPersonName"
-      [placeholder]="'Search for a person...'"
+      [(value)]="selectedUser"
+      [dataSource]="userDataSource"
+      [displayWith]="displayUserName"
+      [placeholder]="'Search for users...'"
       [debounceTime]="300">
     </mer-select>
-    <p *ngIf="selectedPerson">Selected: {{selectedPerson.name}}</p>
+    <p *ngIf="selectedUser">Selected: {{selectedUser.name}}</p>
   `
 })
-export class TypeaheadExampleComponent implements OnInit {
-  selectedPerson: Person | null = null;
-  personDataSource: PersonDataSource;
+export class UserSearchComponent implements OnDestroy {
+  selectedUser: User | null = null;
+  userDataSource: TypeaheadDataSource<User>;
   
-  constructor(private personService: PersonService) {
-    this.personDataSource = new PersonDataSource(this.personService);
+  constructor(private userSearchService: UserSearchService) {
+    // Create the data source with the service
+    this.userDataSource = new TypeaheadDataSource<User>(
+      userSearchService,         // The search service implementation
+      true,                      // Always include selected items in results
+      (a, b) => a.id === b.id    // Custom comparison function
+    );
   }
   
-  displayPersonName(person: Person): string {
-    return person?.name || '';
+  ngOnDestroy(): void {
+    // Cleanup resources
+    this.userDataSource.disconnect();
+  }
+  
+  // Display function for the select component
+  displayUserName(user: User): string {
+    return user?.name || '';
   }
 }
 ```
+
+### TypeaheadDataSource API
+
+The `TypeaheadDataSource` constructor accepts the following parameters:
+
+| Parameter | Type | Required | Description                                                                                                         |
+|-----------|------|----------|---------------------------------------------------------------------------------------------------------------------|
+| searchService | TypeaheadSearchService<T> | Yes | The service implementing the search functionality                                                                   |
+| alwaysIncludeSelected | boolean | No | Whether to always include selected items in the results even if they don't match the search criteria (default: false) |
+| compareItems | (a: T, b: T) => boolean | No | Custom function to determine equality between items (default: reference equality)                                   |
 
 ### How It Works
 
-1. **User Types**: When the user types in the select input, the component invokes SelectDataSource.applyFilter.
+1. **Efficient Request Handling**: When the user types in the search input, previous in-flight requests are automatically cancelled using RxJS `switchMap`, ensuring only the most recent search query is processed.
 
-2. **DataSource Reacts**: Your custom data source receives the text and performs a search operation.
+2. **Loading State Management**: The data source emits loading states that the `MerSelectComponent` can display as a progress indicator.
 
-3. **Loading State**: While searching, the data source emits a `true` loading state, which the component displays as a progress bar.
+3. **Selected Items Preservation**: When `alwaysIncludeSelected` is true, selected items will always appear in the dropdown results even if they don't match the current search query.
 
-4. **Results Update**: Once the search completes, the data source emits the filtered results, and the component updates the dropdown.
+4. **Error Handling**: If the search service encounters an error, the data source will handle it gracefully, preventing the component from breaking and falling back to an empty result set.
 
-5. **Loading Completes**: The data source emits a `false` loading state, and the progress bar disappears.
+### Example: Server-Side Search with TypeaheadDataSource
 
-This pattern allows for efficient typeahead functionality, even with large datasets or when fetching data from remote APIs.
+Here's a more complete example showing how to implement server-side search:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, catchError, of } from 'rxjs';
+import { TypeaheadSearchService } from '@merelis/angular/select';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+}
+
+@Injectable({ providedIn: 'root' })
+export class ProductSearchService implements TypeaheadSearchService<Product> {
+  private apiUrl = 'https://api.example.com/products';
+  
+  constructor(private http: HttpClient) {}
+  
+  search(query: string): Observable<Product[]> {
+    // Create request parameters
+    let params = new HttpParams();
+    if (query) {
+      params = params.set('q', query);
+    }
+    
+    // Add pagination if needed
+    params = params.set('limit', '20');
+    
+    // Make the API request
+    return this.http.get<Product[]>(this.apiUrl, { params }).pipe(
+      catchError(error => {
+        console.error('Error fetching products:', error);
+        return of([]);
+      })
+    );
+  }
+}
+
+// In your component:
+@Component({
+  selector: 'app-product-search',
+  template: `
+    <mer-select
+      [(value)]="selectedProduct"
+      [dataSource]="productDataSource"
+      [displayWith]="displayProductName"
+      [placeholder]="'Search for products...'"
+      [debounceTime]="400">
+      
+      <!-- Custom option template -->
+      <ng-template merSelectOptionDef let-product>
+        <div class="product-option">
+          <div class="product-name">{{product.name}}</div>
+          <div class="product-details">
+            <span class="category">{{product.category}}</span>
+            <span class="price">${{product.price.toFixed(2)}}</span>
+          </div>
+        </div>
+      </ng-template>
+    </mer-select>
+  `,
+  styles: [`
+    .product-option {
+      padding: 8px 0;
+    }
+    .product-name {
+      font-weight: bold;
+    }
+    .product-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85em;
+      color: #666;
+    }
+  `]
+})
+export class ProductSearchComponent implements OnDestroy {
+  selectedProduct: Product | null = null;
+  productDataSource: TypeaheadDataSource<Product>;
+  
+  constructor(productSearchService: ProductSearchService) {
+    this.productDataSource = new TypeaheadDataSource<Product>(
+      productSearchService,
+      true,
+      (a, b) => a.id === b.id
+    );
+  }
+  
+  ngOnDestroy(): void {
+    this.productDataSource.disconnect();
+  }
+  
+  displayProductName(product: Product): string {
+    return product?.name || '';
+  }
+}
+```
+
+### Benefits of Using TypeaheadDataSource
+
+1. **Performance**: Efficiently handles rapid typing by cancelling outdated requests
+2. **User Experience**: Shows loading indicators at appropriate times
+3. **Resilience**: Provides graceful error handling
+4. **Flexibility**: Works with any data type and search implementation
+5. **Integration**: Seamlessly works with MerSelectComponent's search capabilities
+
+The `TypeaheadDataSource` implementation follows best practices for reactive programming with RxJS and works with both simple and complex typeahead scenarios.
 
 ### MerProgressBar
 
