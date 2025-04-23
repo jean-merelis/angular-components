@@ -14,6 +14,27 @@ export interface TypeaheadSearchService<T> {
     search(query: string): Observable<T[]>;
 }
 
+export interface TypeaheadSearchOptions<T> {
+
+    /**
+     * Whether to always include selected items in the results. Default false.
+     */
+    alwaysIncludeSelected?: boolean;
+
+    /**
+     * When set to true, suppresses the emission of loading events.
+     * Useful for cases where you do not want to show loading indicators in the UI component.
+     * @default false
+     */
+    suppressLoadingEvents?: boolean;
+    /**
+     * Custom function to compare items for equality (defaults to comparing by reference)
+     * @param a
+     * @param b
+     */
+    compareWith?:  (a: T, b: T) => boolean ;
+}
+
 /**
  * Generic TypeaheadDataSource implementation that can be used with MerSelectComponent
  * for typeahead functionality with automatic cancellation of previous requests
@@ -28,22 +49,31 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
     // Subject to trigger new searches
     private searchSubject = new Subject<FilterCriteria<T>>();
 
+    private alwaysIncludeSelected: boolean;
+    private suppressLoadingEvents: boolean;
+    private compareWith: (a: T, b: T) => boolean;
+
     /**
      * Creates a new TypeaheadDataSource
      * @param searchService Service that implements the search functionality
-     * @param alwaysIncludeSelected Whether to always include selected items in the results. Default false.
-     * @param compareItems Custom function to compare items for equality (defaults to comparing by reference)
+     * @param options
      */
     constructor(
         private searchService: TypeaheadSearchService<T>,
-        private alwaysIncludeSelected: boolean = false,
-        private compareItems: (a: T, b: T) => boolean = (a, b) => a === b
+        private options: TypeaheadSearchOptions<T> = {}
     ) {
+        this.alwaysIncludeSelected = options.alwaysIncludeSelected ?? false;
+        this.suppressLoadingEvents = options.suppressLoadingEvents ?? false;
+        this.compareWith = options.compareWith ?? ((a, b) => a === b);
+
         // Set up the search pipeline with automatic cancellation
         this.searchSubject.pipe(
             // Use switchMap to automatically cancel previous request when a new one comes in
             switchMap(criteria => {
-                this.loading$.next(true);
+
+                if (!this.suppressLoadingEvents){
+                  this.loading$.next(true);
+                }
 
                 return this.searchService.search(criteria.searchText || '').pipe(
                     // Process the results to include selected items if needed
@@ -59,7 +89,7 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
 
                                     // Check if this selected item exists in the results
                                     const exists = results.some(item =>
-                                        this.compareItems(item, selectedItem)
+                                        this.compareWith(item, selectedItem)
                                     );
 
                                     // If not found, add it to the results
@@ -72,7 +102,7 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
                             else if (criteria.selected) {
                                 // Check if selected item exists in results
                                 const exists = results.some(item =>
-                                    this.compareItems(item, criteria.selected as T)
+                                    this.compareWith(item, criteria.selected as T)
                                 );
 
                                 // If not found, add it
@@ -90,7 +120,11 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
                         return of([] as T[]);
                     }),
                     // Always turn off loading indicator when done
-                    finalize(() => this.loading$.next(false))
+                    finalize(() => {
+                        if (!this.suppressLoadingEvents){
+                            this.loading$.next(false);
+                        }
+                    })
                 );
             })
         ).subscribe(results => {

@@ -277,6 +277,7 @@ private compareItems(a: Person, b: Person): boolean {
     - Implementing complex filtering logic
     - Showing loading indicators during asynchronous operations
 
+
 ## Typeahead Functionality with TypeaheadDataSource
 
 The `MerSelectComponent` supports typeahead functionality, allowing you to search for options as you type. The library provides a generic `TypeaheadDataSource` implementation that handles common typeahead requirements including search request cancellation, loading states, and result management.
@@ -296,6 +297,31 @@ export interface TypeaheadSearchService<T> {
 }
 ```
 
+### TypeaheadSearchOptions Interface
+
+The `TypeaheadDataSource` now accepts a configuration options object:
+
+```typescript
+export interface TypeaheadSearchOptions<T> {
+  /**
+   * Whether to always include selected items in the results. Default false.
+   */
+  alwaysIncludeSelected?: boolean;
+
+  /**
+   * Whether to suppress loading events. Default false.
+   */
+  suppressLoadingEvents?: boolean;
+
+  /**
+   * Custom function to compare items for equality (defaults to comparing by reference)
+   * @param a First item to compare
+   * @param b Second item to compare
+   */
+  compareWith?: (a: T, b: T) => boolean;
+}
+```
+
 ### Using the TypeaheadDataSource
 
 The `TypeaheadDataSource` provides a robust solution for typeahead functionality with automatic cancellation of previous requests, which is essential for a smooth user experience.
@@ -307,7 +333,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { TypeaheadSearchService, TypeaheadDataSource } from '@merelis/angular/select';
+import { TypeaheadSearchService, TypeaheadDataSource, TypeaheadSearchOptions } from '@merelis/angular/select';
 
 // Define your data model
 interface User {
@@ -348,7 +374,7 @@ export class UserSearchService implements TypeaheadSearchService<User> {
 ```typescript
 import { Component, OnDestroy } from '@angular/core';
 import { MerSelectComponent } from '@merelis/angular/select';
-import { TypeaheadDataSource } from '@merelis/angular/select';
+import { TypeaheadDataSource, TypeaheadSearchOptions } from '@merelis/angular/select';
 import { UserSearchService, User } from './user-search.service';
 
 @Component({
@@ -371,11 +397,17 @@ export class UserSearchComponent implements OnDestroy {
   userDataSource: TypeaheadDataSource<User>;
   
   constructor(private userSearchService: UserSearchService) {
-    // Create the data source with the service
+    // Define options for the data source
+    const options: TypeaheadSearchOptions<User> = {
+      alwaysIncludeSelected: true,
+      compareWith: (a, b) => a.id === b.id,
+      suppressLoadingEvents: false
+    };
+    
+    // Create the data source with the service and options
     this.userDataSource = new TypeaheadDataSource<User>(
-      userSearchService,         // The search service implementation
-      true,                      // Always include selected items in results
-      (a, b) => a.id === b.id    // Custom comparison function
+      userSearchService,
+      options
     );
   }
   
@@ -393,126 +425,30 @@ export class UserSearchComponent implements OnDestroy {
 
 ### TypeaheadDataSource API
 
-The `TypeaheadDataSource` constructor accepts the following parameters:
+The `TypeaheadDataSource` constructor now accepts the following parameters:
 
-| Parameter | Type | Required | Description                                                                                                         |
-|-----------|------|----------|---------------------------------------------------------------------------------------------------------------------|
-| searchService | TypeaheadSearchService<T> | Yes | The service implementing the search functionality                                                                   |
-| alwaysIncludeSelected | boolean | No | Whether to always include selected items in the results even if they don't match the search criteria (default: false) |
-| compareItems | (a: T, b: T) => boolean | No | Custom function to determine equality between items (default: reference equality)                                   |
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| searchService | TypeaheadSearchService<T> | Yes | The service implementing the search functionality |
+| options | TypeaheadSearchOptions<T> | No | Configuration options object |
+
+#### TypeaheadSearchOptions Properties
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| alwaysIncludeSelected | boolean | false | Whether to always include selected items in the results even if they don't match the search criteria |
+| suppressLoadingEvents | boolean | false | Whether to suppress loading event emissions |
+| compareWith | (a: T, b: T) => boolean | (a, b) => a === b | Custom function to determine equality between items |
 
 ### How It Works
 
 1. **Efficient Request Handling**: When the user types in the search input, previous in-flight requests are automatically cancelled using RxJS `switchMap`, ensuring only the most recent search query is processed.
 
-2. **Loading State Management**: The data source emits loading states that the `MerSelectComponent` can display as a progress indicator.
+2. **Loading State Management**: The data source emits loading states that the `MerSelectComponent` can display as a progress indicator. This can be suppressed using the `suppressLoadingEvents` option.
 
 3. **Selected Items Preservation**: When `alwaysIncludeSelected` is true, selected items will always appear in the dropdown results even if they don't match the current search query.
 
 4. **Error Handling**: If the search service encounters an error, the data source will handle it gracefully, preventing the component from breaking and falling back to an empty result set.
-
-### Example: Server-Side Search with TypeaheadDataSource
-
-Here's a more complete example showing how to implement server-side search:
-
-```typescript
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, catchError, of } from 'rxjs';
-import { TypeaheadSearchService } from '@merelis/angular/select';
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-}
-
-@Injectable({ providedIn: 'root' })
-export class ProductSearchService implements TypeaheadSearchService<Product> {
-  private apiUrl = 'https://api.example.com/products';
-  
-  constructor(private http: HttpClient) {}
-  
-  search(query: string): Observable<Product[]> {
-    // Create request parameters
-    let params = new HttpParams();
-    if (query) {
-      params = params.set('q', query);
-    }
-    
-    // Add pagination if needed
-    params = params.set('limit', '20');
-    
-    // Make the API request
-    return this.http.get<Product[]>(this.apiUrl, { params }).pipe(
-      catchError(error => {
-        console.error('Error fetching products:', error);
-        return of([]);
-      })
-    );
-  }
-}
-
-// In your component:
-@Component({
-  selector: 'app-product-search',
-  template: `
-    <mer-select
-      [(value)]="selectedProduct"
-      [dataSource]="productDataSource"
-      [displayWith]="displayProductName"
-      [placeholder]="'Search for products...'"
-      [debounceTime]="400">
-      
-      <!-- Custom option template -->
-      <ng-template merSelectOptionDef let-product>
-        <div class="product-option">
-          <div class="product-name">{{product.name}}</div>
-          <div class="product-details">
-            <span class="category">{{product.category}}</span>
-            <span class="price">${{product.price.toFixed(2)}}</span>
-          </div>
-        </div>
-      </ng-template>
-    </mer-select>
-  `,
-  styles: [`
-    .product-option {
-      padding: 8px 0;
-    }
-    .product-name {
-      font-weight: bold;
-    }
-    .product-details {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.85em;
-      color: #666;
-    }
-  `]
-})
-export class ProductSearchComponent implements OnDestroy {
-  selectedProduct: Product | null = null;
-  productDataSource: TypeaheadDataSource<Product>;
-  
-  constructor(productSearchService: ProductSearchService) {
-    this.productDataSource = new TypeaheadDataSource<Product>(
-      productSearchService,
-      true,
-      (a, b) => a.id === b.id
-    );
-  }
-  
-  ngOnDestroy(): void {
-    this.productDataSource.disconnect();
-  }
-  
-  displayProductName(product: Product): string {
-    return product?.name || '';
-  }
-}
-```
 
 ### Benefits of Using TypeaheadDataSource
 
@@ -523,6 +459,8 @@ export class ProductSearchComponent implements OnDestroy {
 5. **Integration**: Seamlessly works with MerSelectComponent's search capabilities
 
 The `TypeaheadDataSource` implementation follows best practices for reactive programming with RxJS and works with both simple and complex typeahead scenarios.
+
+---
 
 ### MerProgressBar
 
@@ -581,6 +519,8 @@ export class ProgressExampleComponent {
 }
 ```
 
+---
+
 ## Custom Templates
 
 The `MerSelectComponent` allows customization of the trigger (clickable area) and options through templates.
@@ -613,6 +553,8 @@ The `MerSelectComponent` allows customization of the trigger (clickable area) an
   </ng-template>
 </mer-select>
 ```
+
+---
 
 ## Testing with Component Harnesses
 
@@ -920,6 +862,8 @@ describe('ColorSelectComponent', () => {
 });
 ```
 
+---
+
 ## Integration with Angular Material
 The MerSelectComponent can be integrated with Angular Material's mat-form-field component through the @merelis/angular-material package. This integration allows you to use the select component within Material's form field, benefiting from features like floating labels, hints, and error messages.
 
@@ -982,6 +926,8 @@ export class MaterialExampleComponent {
 }
 ```
 
+---
+
 ## Component Integration
 
 The `MerSelectComponent` internally uses the `MerProgressBar` to display a loading indicator when the `loading` property is set to `true`.
@@ -993,6 +939,8 @@ The `MerSelectComponent` internally uses the `MerProgressBar` to display a loadi
   [loading]="isLoadingData">
 </mer-select>
 ```
+
+---
 
 ### CSS Customization
 
@@ -1132,6 +1080,8 @@ The components can be customized using CSS variables. Below are the available va
   --mer-progress-bar-color: rgb(5, 114, 206);
 }
 ```
+
+---
 
 ## Contributing
 
