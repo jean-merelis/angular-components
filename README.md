@@ -297,12 +297,12 @@ export interface TypeaheadSearchService<T> {
 }
 ```
 
-### TypeaheadSearchOptions Interface
+### TypeaheadDataSourceOptions Interface
 
 The `TypeaheadDataSource` now accepts a configuration options object:
 
 ```typescript
-export interface TypeaheadSearchOptions<T> {
+export interface TypeaheadDataSourceOptions<T> {
   /**
    * Whether to always include selected items in the results. Default false.
    */
@@ -333,7 +333,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { HttpClient } from '@angular/common/http';
-import { TypeaheadSearchService, TypeaheadDataSource, TypeaheadSearchOptions } from '@merelis/angular/select';
+import { TypeaheadSearchService, TypeaheadDataSource, TypeaheadDataSourceOptions } from '@merelis/angular/select';
 
 // Define your data model
 interface User {
@@ -374,7 +374,7 @@ export class UserSearchService implements TypeaheadSearchService<User> {
 ```typescript
 import { Component, OnDestroy } from '@angular/core';
 import { MerSelectComponent } from '@merelis/angular/select';
-import { TypeaheadDataSource, TypeaheadSearchOptions } from '@merelis/angular/select';
+import { TypeaheadDataSource, TypeaheadDataSourceOptions } from '@merelis/angular/select';
 import { UserSearchService, User } from './user-search.service';
 
 @Component({
@@ -398,7 +398,7 @@ export class UserSearchComponent implements OnDestroy {
   
   constructor(private userSearchService: UserSearchService) {
     // Define options for the data source
-    const options: TypeaheadSearchOptions<User> = {
+    const options: TypeaheadDataSourceOptions<User> = {
       alwaysIncludeSelected: true,
       compareWith: (a, b) => a.id === b.id,
       suppressLoadingEvents: false
@@ -430,9 +430,9 @@ The `TypeaheadDataSource` constructor now accepts the following parameters:
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | searchService | TypeaheadSearchService<T> | Yes | The service implementing the search functionality |
-| options | TypeaheadSearchOptions<T> | No | Configuration options object |
+| options | TypeaheadDataSourceOptions<T> | No | Configuration options object |
 
-#### TypeaheadSearchOptions Properties
+#### TypeaheadDataSourceOptions Properties
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|

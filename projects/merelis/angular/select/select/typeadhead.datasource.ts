@@ -14,7 +14,7 @@ export interface TypeaheadSearchService<T> {
     search(query: string): Observable<T[]>;
 }
 
-export interface TypeaheadSearchOptions<T> {
+export interface TypeaheadDataSourceOptions<T> {
 
     /**
      * Whether to always include selected items in the results. Default false.
@@ -60,7 +60,7 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
      */
     constructor(
         private searchService: TypeaheadSearchService<T>,
-        private options: TypeaheadSearchOptions<T> = {}
+        private options: TypeaheadDataSourceOptions<T> = {}
     ) {
         this.alwaysIncludeSelected = options.alwaysIncludeSelected ?? false;
         this.suppressLoadingEvents = options.suppressLoadingEvents ?? false;
