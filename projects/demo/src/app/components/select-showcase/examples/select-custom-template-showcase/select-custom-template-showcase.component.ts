@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {MerSelectComponent, MerSelectOptionDef, MerSelectTriggerDef} from  "../../../../../../../merelis/angular/select";
+import {MerSelect, MerSelectOptionDef, MerSelectTriggerDef} from  "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
 
 
@@ -12,7 +12,7 @@ interface User {
 @Component({
   selector: 'app-select-custom-template-showcase',
     imports: [
-        MerSelectComponent,
+        MerSelect,
         MerSelectOptionDef,
         MerSelectTriggerDef,
         HighlightComponent
@@ -68,7 +68,7 @@ export class SelectCustomTemplateShowcaseComponent {
     `;
     tsCode = `
 import { Component } from '@angular/core';
-import {MerSelectComponent, MerSelectOptionDef, MerSelectTriggerDef} from  "@merelis/angular/select";
+import {MerSelect, MerSelectOptionDef, MerSelectTriggerDef} from  "@merelis/angular/select";
 
 interface User {
     id: number;
@@ -79,7 +79,7 @@ interface User {
 @Component({
   selector: 'app-select-custom-template-showcase',
     imports: [
-        MerSelectComponent,
+        MerSelect,
         MerSelectOptionDef,
         MerSelectTriggerDef,
     ],

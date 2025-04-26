@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { faker } from "@faker-js/faker";
 import { MerSelectFormFieldControl } from "../../../../../../../merelis/angular-material/select";
-import { MerSelectComponent } from "../../../../../../../merelis/angular/select";
+import { MerSelect } from "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
 
 @Component({
@@ -10,7 +10,7 @@ import { HighlightComponent } from "../../../highlight/highlight.component";
   imports: [
       MatFormField,
       MatLabel,
-      MerSelectComponent,
+      MerSelect,
       MerSelectFormFieldControl,
       HighlightComponent,
   ],
@@ -46,14 +46,14 @@ export class SelectMaterialShowcaseComponent {
 import { Component } from '@angular/core';
 import { MatFormField, MatLabel } from "@angular/material/form-field";
 import { MerSelectFormFieldControl } from "@merelis/angular-material/select";
-import { MerSelectComponent } from "@merelis/angular/select";
+import { MerSelect } from "@merelis/angular/select";
 
 @Component({
   selector: 'app-select-material-showcase',
   imports: [
       MatFormField,
       MatLabel,
-      MerSelectComponent,
+      MerSelect,
       MerSelectFormFieldControl,
   ],
   templateUrl: './select-material-showcase.component.html'

@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { MerSelectComponent } from "../../../../../../../merelis/angular/select";
+import { MerSelect } from "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
 
 @Component({
   selector: 'app-select-basic-showcase',
     imports: [
-        MerSelectComponent,
+        MerSelect,
         HighlightComponent
     ],
   templateUrl: './select-basic-showcase.component.html',
@@ -28,12 +28,12 @@ export class SelectBasicShowcaseComponent {
     `;
     tsCode = `
 import { Component } from '@angular/core';
-import { MerSelectComponent } from "@merelis/angular/select";
+import { MerSelect } from "@merelis/angular/select";
 
 @Component({
   selector: 'app-basic',
     imports: [
-        MerSelectComponent,
+        MerSelect,
     ],
   templateUrl: './basic.component.html',
   styleUrl: './basic.component.scss'

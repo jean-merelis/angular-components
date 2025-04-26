@@ -36,7 +36,7 @@ export interface TypeaheadDataSourceOptions<T> {
 }
 
 /**
- * Generic TypeaheadDataSource implementation that can be used with MerSelectComponent
+ * Generic TypeaheadDataSource implementation that can be used with MerSelect
  * for typeahead functionality with automatic cancellation of previous requests
  */
 export class TypeaheadDataSource<T> implements SelectDataSource<T> {
@@ -157,7 +157,7 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
     }
 
     /**
-     * Main method used by MerSelectComponent for filtering
+     * Main method used by MerSelect for filtering
      * @param criteria The filter criteria from the component
      */
     async applyFilter(criteria: FilterCriteria<T>): Promise<void> {

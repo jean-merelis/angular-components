@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { MerOption, MerOptionGroup } from "./option";
 import {
-    MerSelectComponent,
+    MerSelect,
     MerSelectMultiActionsDef,
     MerSelectOptionDef,
     MerSelectPanelOrigin,
@@ -10,11 +10,11 @@ import {
 
 @NgModule({
     imports: [
-        MerSelectPanelOrigin, MerSelectTriggerDef, MerSelectOptionDef, MerSelectComponent,
+        MerSelectPanelOrigin, MerSelectTriggerDef, MerSelectOptionDef, MerSelect,
         MerOption, MerOptionGroup, MerSelectMultiActionsDef
     ],
     exports: [
-        MerSelectPanelOrigin, MerSelectTriggerDef, MerSelectOptionDef, MerSelectComponent,
+        MerSelectPanelOrigin, MerSelectTriggerDef, MerSelectOptionDef, MerSelect,
         MerOption, MerOptionGroup, MerSelectMultiActionsDef
     ]
 })

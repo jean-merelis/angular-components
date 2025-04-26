@@ -1,6 +1,6 @@
 import { NgIf } from "@angular/common";
 import { Component } from '@angular/core';
-import { MerSelectComponent } from "../../../../../../../merelis/angular/select";
+import { MerSelect } from "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
 
 
@@ -14,7 +14,7 @@ interface User {
   selector: 'app-select-objects-showcase',
   imports: [
       NgIf,
-      MerSelectComponent,
+      MerSelect,
       HighlightComponent
   ],
   templateUrl: './select-objects-showcase.component.html',
@@ -59,7 +59,7 @@ export class SelectObjectsShowcaseComponent {
     `;
     tsCode = `
 import { Component } from '@angular/core';
-import { MerSelectComponent } from "@merelis/angular/select";
+import { MerSelect } from "@merelis/angular/select";
 
 interface User {
     id: number;
@@ -71,7 +71,7 @@ interface User {
   selector: 'app-select-objets-showcase',
   imports: [
       NgIf,
-      MerSelectComponent
+      MerSelect
   ],
   templateUrl: './select-objects-showcase.component.html',
   styleUrl: './select-objects-showcase.component.scss'

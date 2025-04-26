@@ -18,7 +18,7 @@ npm install @merelis/angular --save
 
 Currently, the library provides the following components:
 
-### MerSelectComponent
+### MerSelect
 
 An advanced select component with filtering and typeahead capabilities. Supports single or multiple selection, full customization, reactive forms integration, and conditional rendering.
 
@@ -44,14 +44,14 @@ Since these are standalone components, you can import them directly in your comp
 
 ```typescript
 import { Component } from '@angular/core';
-import { MerSelectComponent } from '@merelis/angular/select';
+import { MerSelect } from '@merelis/angular/select';
 import { MerProgressBar } from '@merelis/angular/progress-bar';
 
 @Component({
     selector: 'app-example',
     standalone: true,
     imports: [
-        MerSelectComponent,
+        MerSelect,
         MerProgressBar
     ],
     template: `
@@ -64,9 +64,9 @@ export class ExampleComponent {
 }
 ```
 
-### MerSelectComponent
+### MerSelect
 
-The `MerSelectComponent` offers a robust alternative to the native HTML select, with additional features like filtering and typeahead.
+The `MerSelect` offers a robust alternative to the native HTML select, with additional features like filtering and typeahead.
 
 #### Basic HTML
 
@@ -175,7 +175,7 @@ export class ExampleComponent {
 
 ## Filtering Behavior and DataSource
 
-The `MerSelectComponent` supports two operation modes for data filtering:
+The `MerSelect` supports two operation modes for data filtering:
 
 ### 1. Automatic Filtering (Array as dataSource)
 
@@ -213,61 +213,6 @@ export class CustomDataSource<T> implements SelectDataSource<T> {
 }
 ```
 
-### Example: Implementing alwaysIncludesSelected behavior in a custom DataSource
-
-If you want to replicate the `alwaysIncludesSelected` behavior in a custom dataSource:
-
-```typescript
-async applyFilter(criteria: FilterCriteria<Person>): Promise<void> {
-    this.loading$.next(true);
-    try {
-        // Fetch filtered results
-        const filteredResults = await this.service.search(criteria.searchText);
-        
-        // If we have selected items and want to always include them
-        if (criteria.selected) {
-            const results = [...filteredResults];
-            
-            // For multiple selection
-            if (Array.isArray(criteria.selected)) {
-                criteria.selected.forEach(selectedItem => {
-                    // Check if the item is already in the results
-                    const exists = results.some(item => 
-                        this.compareItems(item, selectedItem)
-                    );
-                    
-                    // If not, add it
-                    if (!exists) {
-                        results.push(selectedItem);
-                    }
-                });
-            } 
-            // For single selection
-            else {
-                const exists = results.some(item => 
-                    this.compareItems(item, criteria.selected)
-                );
-                
-                if (!exists) {
-                    results.push(criteria.selected);
-                }
-            }
-            
-            this.data.next(results);
-        } else {
-            this.data.next(filteredResults);
-        }
-    } finally {
-        this.loading$.next(false);
-    }
-}
-
-// Helper function to compare items
-private compareItems(a: Person, b: Person): boolean {
-    return a.id === b.id;
-}
-```
-
 ### Choosing Between Array and SelectDataSource
 
 - **Use a simple array** when you have a small set of static data that doesn't require server-side filtering.
@@ -280,7 +225,7 @@ private compareItems(a: Person, b: Person): boolean {
 
 ## Typeahead Functionality with TypeaheadDataSource
 
-The `MerSelectComponent` supports typeahead functionality, allowing you to search for options as you type. The library provides a generic `TypeaheadDataSource` implementation that handles common typeahead requirements including search request cancellation, loading states, and result management.
+The `MerSelect` supports typeahead functionality, allowing you to search for options as you type. The library provides a generic `TypeaheadDataSource` implementation that handles common typeahead requirements including search request cancellation, loading states, and result management.
 
 ### TypeaheadSearchService Interface
 
@@ -373,14 +318,14 @@ export class UserSearchService implements TypeaheadSearchService<User> {
 
 ```typescript
 import { Component, OnDestroy } from '@angular/core';
-import { MerSelectComponent } from '@merelis/angular/select';
+import { MerSelect } from '@merelis/angular/select';
 import { TypeaheadDataSource, TypeaheadDataSourceOptions } from '@merelis/angular/select';
 import { UserSearchService, User } from './user-search.service';
 
 @Component({
   selector: 'app-user-search',
   standalone: true,
-  imports: [MerSelectComponent],
+  imports: [MerSelect],
   template: `
     <mer-select
       [(value)]="selectedUser"
@@ -444,7 +389,7 @@ The `TypeaheadDataSource` constructor now accepts the following parameters:
 
 1. **Efficient Request Handling**: When the user types in the search input, previous in-flight requests are automatically cancelled using RxJS `switchMap`, ensuring only the most recent search query is processed.
 
-2. **Loading State Management**: The data source emits loading states that the `MerSelectComponent` can display as a progress indicator. This can be suppressed using the `suppressLoadingEvents` option.
+2. **Loading State Management**: The data source emits loading states that the `MerSelect` can display as a progress indicator. This can be suppressed using the `suppressLoadingEvents` option.
 
 3. **Selected Items Preservation**: When `alwaysIncludeSelected` is true, selected items will always appear in the dropdown results even if they don't match the current search query.
 
@@ -456,7 +401,7 @@ The `TypeaheadDataSource` constructor now accepts the following parameters:
 2. **User Experience**: Shows loading indicators at appropriate times
 3. **Resilience**: Provides graceful error handling
 4. **Flexibility**: Works with any data type and search implementation
-5. **Integration**: Seamlessly works with MerSelectComponent's search capabilities
+5. **Integration**: Seamlessly works with MerSelect's search capabilities
 
 The `TypeaheadDataSource` implementation follows best practices for reactive programming with RxJS and works with both simple and complex typeahead scenarios.
 
@@ -523,7 +468,7 @@ export class ProgressExampleComponent {
 
 ## Custom Templates
 
-The `MerSelectComponent` allows customization of the trigger (clickable area) and options through templates.
+The `MerSelect` allows customization of the trigger (clickable area) and options through templates.
 
 ### Custom Trigger Template
 
@@ -558,7 +503,7 @@ The `MerSelectComponent` allows customization of the trigger (clickable area) an
 
 ## Testing with Component Harnesses
 
-The library provides testing harnesses for the `MerSelectComponent` and its options, making it easier to test components that use these elements. These harnesses are built on top of Angular's Component Test Harnesses (CDK Testing) and provide a clean, implementation-detail-free way to interact with components in tests.
+The library provides testing harnesses for the `MerSelect` and its options, making it easier to test components that use these elements. These harnesses are built on top of Angular's Component Test Harnesses (CDK Testing) and provide a clean, implementation-detail-free way to interact with components in tests.
 
 ### Installation
 
@@ -600,7 +545,7 @@ describe('YourComponent', () => {
 
 ### MerSelectHarness API
 
-The `MerSelectHarness` provides methods to interact with and query the state of a `MerSelectComponent`:
+The `MerSelectHarness` provides methods to interact with and query the state of a `MerSelect`:
 
 | Method | Description |
 |--------|-------------|
@@ -634,7 +579,7 @@ The `MerSelectOptionHarness` provides methods to interact with and query the sta
 
 ### Example Test
 
-Here's an example of testing a component that uses `MerSelectComponent`:
+Here's an example of testing a component that uses `MerSelect`:
 
 ```typescript
 import { Component } from '@angular/core';
@@ -642,7 +587,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MerSelectHarness, MerSelectOptionHarness } from '@merelis/angular/select/testing';
-import { MerSelectComponent } from '@merelis/angular/select';
+import { MerSelect } from '@merelis/angular/select';
 
 @Component({
   template: `
@@ -653,7 +598,7 @@ import { MerSelectComponent } from '@merelis/angular/select';
     </mer-select>
   `,
   standalone: true,
-  imports: [MerSelectComponent]
+  imports: [MerSelect]
 })
 class TestComponent {
   fruits = ['Apple', 'Banana', 'Orange', 'Strawberry'];
@@ -734,7 +679,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MerSelectHarness } from '@merelis/angular/select/testing';
-import { MerSelectComponent } from '@merelis/angular/select';
+import { MerSelect } from '@merelis/angular/select';
 
 interface User {
   id: number;
@@ -753,7 +698,7 @@ interface User {
     </mer-select>
   `,
   standalone: true,
-  imports: [MerSelectComponent]
+  imports: [MerSelect]
 })
 class UserSelectComponent {
   users: User[] = [
@@ -809,7 +754,7 @@ describe('UserSelectComponent', () => {
 
 ### Testing Multiple Selection
 
-You can also test the multiple selection mode of the `MerSelectComponent`:
+You can also test the multiple selection mode of the `MerSelect`:
 
 ```typescript
 @Component({
@@ -822,7 +767,7 @@ You can also test the multiple selection mode of the `MerSelectComponent`:
     </mer-select>
   `,
   standalone: true,
-  imports: [MerSelectComponent]
+  imports: [MerSelect]
 })
 class ColorSelectComponent {
   colors = ['Red', 'Green', 'Blue', 'Yellow', 'Purple'];
@@ -865,7 +810,7 @@ describe('ColorSelectComponent', () => {
 ---
 
 ## Integration with Angular Material
-The MerSelectComponent can be integrated with Angular Material's mat-form-field component through the @merelis/angular-material package. This integration allows you to use the select component within Material's form field, benefiting from features like floating labels, hints, and error messages.
+The MerSelect can be integrated with Angular Material's mat-form-field component through the @merelis/angular-material package. This integration allows you to use the select component within Material's form field, benefiting from features like floating labels, hints, and error messages.
 
 ### Installation
 
@@ -879,7 +824,7 @@ npm install @merelis/angular-material --save
 import { Component } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MerSelectComponent } from '@merelis/angular/select';
+import { MerSelect } from '@merelis/angular/select';
 import { MerSelectFormFieldControl } from "@merelis/angular-material/select";
 
 @Component({
@@ -888,7 +833,7 @@ import { MerSelectFormFieldControl } from "@merelis/angular-material/select";
   imports: [
     MatFormFieldModule,
     MatInputModule,
-    MerSelectComponent,
+    MerSelect,
     MerSelectFormFieldControl
   ],
   providers: [
@@ -930,7 +875,7 @@ export class MaterialExampleComponent {
 
 ## Component Integration
 
-The `MerSelectComponent` internally uses the `MerProgressBar` to display a loading indicator when the `loading` property is set to `true`.
+The `MerSelect` internally uses the `MerProgressBar` to display a loading indicator when the `loading` property is set to `true`.
 
 ```html
 <mer-select

@@ -15,7 +15,7 @@ import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { FormControl, FormGroupDirective, NgControl, NgForm } from "@angular/forms";
 import { ErrorStateMatcher } from "@angular/material/core";
 import { MAT_FORM_FIELD, MatFormFieldControl } from "@angular/material/form-field";
-import { MerSelectComponent } from "@merelis/angular/select";
+import { MerSelect } from "@merelis/angular/select";
 import { Observable, Subject } from "rxjs";
 
 
@@ -26,7 +26,7 @@ import { Observable, Subject } from "rxjs";
 })
 export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnInit, OnDestroy, AfterViewInit {
     readonly errorStateMatcher = input<ErrorStateMatcher>();
-    protected select: MerSelectComponent<T> = inject(MerSelectComponent<T>, {host: true});
+    protected select: MerSelect<T> = inject(MerSelect<T>, {host: true});
     protected matFormField = inject(MAT_FORM_FIELD, {host: true});
     protected destroyRef = inject(DestroyRef);
     protected parentFormGroup = inject(FormGroupDirective, {optional: true});

@@ -1,13 +1,13 @@
 import { NgFor, NgIf } from "@angular/common";
 import { Component } from '@angular/core';
-import { MerSelectComponent } from "../../../../../../../merelis/angular/select";
+import { MerSelect } from "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
 
 @Component({
   selector: 'app-select-multi-showcase',
   imports: [
       NgIf, NgFor,
-      MerSelectComponent,
+      MerSelect,
       HighlightComponent
   ],
   templateUrl: './select-multi-showcase.component.html',
@@ -36,13 +36,13 @@ export class SelectMultiShowcaseComponent {
     tsCode = `
 import { NgFor, NgIf } from "@angular/common";
 import { Component } from '@angular/core';
-import { MerSelectComponent } from "@merelis/angular/select";
+import { MerSelect } from "@merelis/angular/select";
 
 @Component({
   selector: 'app-select-multi-showcase',
   imports: [
       NgIf, NgFor,
-      MerSelectComponent,
+      MerSelect,
   ],
   templateUrl: './select-multi-showcase.component.html',
   styleUrl: './select-multi-showcase.component.scss'

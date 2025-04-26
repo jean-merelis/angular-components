@@ -245,7 +245,7 @@ export class MerSelectMultiActionsDef {
         OverlayModule,
     ],
     providers: [
-        {provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MerSelectComponent), multi: true}
+        {provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => MerSelect), multi: true}
     ],
     animations: [panelAnimation],
     host: {
@@ -263,7 +263,7 @@ export class MerSelectMultiActionsDef {
         "[attr.aria-haspopup]": 'disabled() || readOnly() ? null : "listbox"',
     }
 })
-export class MerSelectComponent<T> implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit, MerOptionParentComponent {
+export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, AfterViewInit, MerOptionParentComponent {
     /** Unique ID to be used by autocomplete trigger's "aria-owns" property. */
     id: string = inject(_IdGenerator).getId('mer-select-');
 
