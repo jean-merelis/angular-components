@@ -20,7 +20,7 @@ export interface SelectOptionHarnessFilters extends BaseHarnessFilters {
     isSelected?: boolean;
 }
 
-/** Harness for interacting with a `mat-option` in tests. */
+/** Harness for interacting with a `mer-option` in tests. */
 export class MerSelectOptionHarness extends ContentContainerComponentHarness {
     /** Selector used to locate option instances. */
     static hostSelector = '.mer-option';

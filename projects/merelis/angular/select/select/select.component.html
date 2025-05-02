@@ -74,25 +74,25 @@
          (@panelAnimation.done)="_animationDone.next($event)"
 
     >
-        @if (showMultiSelectActions()){
-            <div class="mer-select-multiple-actions" #multiactionspanel>
-                <ng-container [ngTemplateOutlet]="multiActionsTemplate()?.templateRef || defaultMultipleActions">
-                </ng-container>
-            </div>
-        }
+        <div class="mer-select-panel" #panel  role="listbox">
 
-    <div class="mer-select-panel" #panel
-         role="listbox"
-         [class.with-select-actions]="showMultiSelectActions()">
+            @if (showMultiSelectAllOption()){
+                <div #selectAllOptionsElem class="mer-select-all-options" (click)="selectAllFiltered($event)">
+                    <span class="mer-option-label">
+                    <ng-container [ngTemplateOutlet]="multiSelectAllOptionsTemplate()?.templateRef || defaultMultipleSelectAllOption">
+                    </ng-container>
+                    </span>
+                </div>
+            }
 
-        @for (opt of filteredOptions(); track opt) {
-            <mer-option [value]="opt">
-                <ng-container [ngTemplateOutlet]="optionTemplate()?.templateRef || defaultopt"
-                              [ngTemplateOutletContext]="{$implicit: opt, option: opt }">
-                </ng-container>
-            </mer-option>
-        }
-    </div>
+            @for (opt of filteredOptions(); track opt) {
+                <mer-option [value]="opt">
+                    <ng-container [ngTemplateOutlet]="optionTemplate()?.templateRef || defaultopt"
+                                  [ngTemplateOutletContext]="{$implicit: opt, option: opt }">
+                    </ng-container>
+                </mer-option>
+            }
+        </div>
     </div>
 </ng-template>
 
@@ -121,8 +121,7 @@
     {{ getDisplayValue(opt) }}
 </ng-template>
 
-<ng-template #defaultMultipleActions >
-    <span class="mer-select-multiple-action select-all" (click)="selectAllFiltered()">{{computedSelectAllFilteredText()}}</span>
-    <span class="mer-select-multiple-action deselect-all" (click)="deselectAll()">{{computedDeselectAllText()}}</span>
+<ng-template #defaultMultipleSelectAllOption >
+    {{computedSelectAllFilteredText()}}
 </ng-template>
 

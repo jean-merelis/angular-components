@@ -19,7 +19,12 @@ import {
     transition,
     trigger
 } from '@angular/animations';
-import { _IdGenerator, ActiveDescendantKeyManager, addAriaReferencedId, removeAriaReferencedId } from '@angular/cdk/a11y';
+import {
+    _IdGenerator,
+    ActiveDescendantKeyManager,
+    addAriaReferencedId,
+    removeAriaReferencedId
+} from '@angular/cdk/a11y';
 import { Directionality } from "@angular/cdk/bidi";
 import { SelectionModel } from "@angular/cdk/collections";
 import { hasModifierKey } from "@angular/cdk/keycodes";
@@ -27,7 +32,8 @@ import {
     ConnectedPosition,
     FlexibleConnectedPositionStrategy,
     Overlay,
-    OverlayConfig, OverlayModule,
+    OverlayConfig,
+    OverlayModule,
     OverlayRef,
     PositionStrategy,
     ScrollStrategy,
@@ -40,7 +46,6 @@ import {
     afterNextRender,
     AfterViewInit,
     booleanAttribute,
-    ChangeDetectionStrategy,
     ChangeDetectorRef,
     Component,
     computed,
@@ -49,12 +54,12 @@ import {
     DestroyRef,
     Directive,
     effect,
-    ElementRef, EnvironmentInjector,
+    ElementRef,
+    EnvironmentInjector,
     EventEmitter,
     forwardRef,
     inject,
     InjectionToken,
-    Injector,
     input,
     model,
     NgZone,
@@ -71,16 +76,17 @@ import {
     ViewEncapsulation
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
-import { ControlValueAccessor, FormControl, FormGroupDirective, NG_VALUE_ACCESSOR } from "@angular/forms";
+import { ControlValueAccessor, FormGroupDirective, NG_VALUE_ACCESSOR } from "@angular/forms";
 import { MerProgressBar } from "@merelis/angular/progress-bar";
 import { isNotPresent, noop } from "@merelis/utils";
 import {
-    BehaviorSubject,
     debounceTime,
     defer,
-    distinctUntilChanged, EMPTY,
+    distinctUntilChanged,
+    EMPTY,
     fromEvent,
-    merge, mergeMap,
+    merge,
+    mergeMap,
     Observable,
     of as observableOf,
     Subject,
@@ -92,12 +98,13 @@ import {
     _countGroupLabelsBeforeOption,
     _getOptionScrollPosition,
     MER_OPTION_GROUP,
-    MerOption, MerOptionParentComponent,
+    MerOption,
+    MerOptionParentComponent,
     MerOptionSelectionChange
 } from "../option";
 
 import { Comparable, DisplayWith, FilterPredicate, OptionPredicate } from "../types";
-import { MerSelectDataSource, SelectDataSource, FilterCriteria } from "./select.datasource";
+import { MerSelectDataSource, SelectDataSource } from "./select.datasource";
 
 declare var ngDevMode: boolean;
 
@@ -160,7 +167,6 @@ export interface MerSelectDefaultOptions {
     hideSingleSelectionIndicator?: boolean;
 
     selectAllFilteredText?: string;
-    deselectAllText?: string;
 }
 
 /** Injection token to be used to override the default options for `mat-autocomplete`. */
@@ -222,6 +228,15 @@ export class MerSelectOptionDef {
     }
 }
 
+@Directive({
+    selector: "ng-template[merMultiSelectAllOptionsDef]",
+    standalone: true,
+})
+export class MerultiSelectAllOptionsTemplateDef {
+    constructor(public templateRef: TemplateRef<any>) {
+    }
+}
+
 
 @Directive({
     selector: "ng-template[merSelectMultiActionsDef]",
@@ -236,7 +251,6 @@ export class MerSelectMultiActionsDef {
     selector: "mer-select",
     templateUrl: './select.component.html',
     encapsulation: ViewEncapsulation.None,
-    changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
     imports: [
         CommonModule,
@@ -283,7 +297,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
     readonly canClear = input(true, {transform: booleanAttribute});
     readonly alwaysIncludesSelected = input(false, {transform: booleanAttribute});
     readonly autoActiveFirstOption = input(true, {transform: booleanAttribute});
-    readonly showMultiSelectActions = input(false, {transform: booleanAttribute});
+    readonly showMultiSelectAllOption = input(false, {transform: booleanAttribute});
     readonly selectAllFilteredText = input<string>();
     readonly deselectAllText = input<string>();
     readonly debounceTime = input(100, {transform: numberAttribute});
@@ -347,6 +361,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
     protected readonly input = viewChild<ElementRef<HTMLInputElement>>("textinput");
     protected readonly triggerTemplate = contentChild(MerSelectTriggerDef);
     protected readonly optionTemplate = contentChild(MerSelectOptionDef);
+    protected readonly multiSelectAllOptionsTemplate = contentChild(MerSelectOptionDef);
     protected readonly multiActionsTemplate = contentChild(MerSelectMultiActionsDef);
 
     protected readonly viewChildOptions = viewChildren(MerOption<T>);
@@ -372,17 +387,10 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
         return true;
     })
 
-    protected computedSelectAllFilteredText = computed(()=>{
+    protected computedSelectAllFilteredText = computed(() => {
         let text = this.selectAllFilteredText();
-        if (!text){
-          text  = (this._defaults?.selectAllFilteredText) ?? 'Select all filtered';
-        }
-        return text;
-    });
-    protected computedDeselectAllText = computed(()=>{
-        let text = this.deselectAllText();
-        if (!text){
-            text  = (this._defaults?.deselectAllText) ?? 'Deselect all';
+        if (!text) {
+            text = (this._defaults?.selectAllFilteredText) ?? 'Select all filtered';
         }
         return text;
     });
@@ -554,7 +562,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
     _animationDone = new EventEmitter<AnimationEvent>();
     /** Element for the panel containing the autocomplete options. */
     protected readonly panel = viewChild.required<ElementRef>("panel");
-    protected readonly multiactionspanel = viewChild<ElementRef>("multiactionspanel");
+    protected readonly selectAllOptionsEl = viewChild<ElementRef>("selectAllOptionsElem");
 
     private _optionsSubscription = new Subscription();
 
@@ -902,7 +910,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
         }
         if (this.multipleSelection()) {
             this.value.set([]);
-            afterNextRender({read: ()=> this._overlayRef?.updatePosition()}, {injector: this._environmentInjector});
+            afterNextRender({read: () => this._overlayRef?.updatePosition()}, {injector: this._environmentInjector});
 
         } else {
             this.value.set(null);
@@ -1532,7 +1540,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
             this.renderedOptionGroups(),
         );
 
-        if (index === 0 && labelCount === 1) {
+        if (index == -1 || (index === 0 && labelCount <= 2)) {
             // If we've got one group label before the option and we're at the top option,
             // scroll the list to the top. This is better UX than scrolling the list to the
             // top of the option, because it allows the user to read the top group's label.
@@ -1541,10 +1549,6 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
             const option = this.renderedOptions()[index];
             if (option) {
                 const panelPadding = 8;
-                let multiactionspanelHeight = 0;
-                if (this.multiactionspanel()){
-                    multiactionspanelHeight = this.multiactionspanel()?.nativeElement?.offsetHeight ?? 0;
-                }
                 const element = option._getHostElement();
                 const newScrollPosition = _getOptionScrollPosition(
                     element.offsetTop,
@@ -1553,7 +1557,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
                     this.panel().nativeElement.offsetHeight,
                 );
 
-                this._setScrollTop(newScrollPosition - multiactionspanelHeight - panelPadding);
+                this._setScrollTop(newScrollPosition - panelPadding);
             }
         }
     }
@@ -1659,8 +1663,11 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
         }
     }
 
-    selectAllFiltered(): void {
+    selectAllFiltered(evt: Event): void {
         if (!this.multipleSelection()) return;
+        evt.preventDefault();
+        evt.stopPropagation();
+        evt.stopImmediatePropagation();
 
         const allOptions = this.filteredOptions();
         const validOptions = allOptions.filter(opt => !this.isOptionDisabled(opt));
@@ -1687,7 +1694,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
         this.onChangeCallback(this.value());
         this._updateOptionsSelectedState();
         this._stateChanges.next();
-        afterNextRender(() => this._overlayRef?.updatePosition(), {injector: this._environmentInjector});
+        afterNextRender(() => this.closePanel(), {injector: this._environmentInjector});
     }
 
     deselectAll(): void {

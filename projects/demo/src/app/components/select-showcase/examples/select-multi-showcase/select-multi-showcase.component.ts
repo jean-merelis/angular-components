@@ -29,7 +29,7 @@ export class SelectMultiShowcaseComponent {
                 [dataSource]="colors"
                 [(value)]="selectedColors"
                 [multiple]="true"
-                [showMultiSelectActions]="true"
+                [showMultiSelectAllOption]="true"
                 [placeholder]="'Select colors'">
     </mer-select>
     `;

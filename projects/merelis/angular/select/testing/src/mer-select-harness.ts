@@ -10,6 +10,10 @@
  */
 
 import { BaseHarnessFilters, ComponentHarness, HarnessPredicate, TestElement, TextOptions } from "@angular/cdk/testing"
+import {
+    MerSelectAllOptionHarness,
+    SelectAllOptionHarnessFilters
+} from "@merelis/angular/select/testing/src/mer-select-all-option-harness";
 import { SelectOptionHarnessFilters, MerSelectOptionHarness } from "./mer-select-option-harness";
 
 export interface MerSelectHarnessFilters extends BaseHarnessFilters {
@@ -119,6 +123,26 @@ export class MerSelectHarness extends ComponentHarness {
         for (const option of options) {
           await option.click();
         }
+    }
+
+    async getSelectAllOptions(): Promise<MerSelectOptionHarness> {
+        if (!(await this.isOpen())) {
+            throw new Error('Unable to retrieve options for select. Select panel is closed.');
+        }
+
+        return this._documentRootLocator.locatorFor(
+            MerSelectAllOptionHarness.with({ancestor: await this._getPanelSelector()} as SelectAllOptionHarnessFilters),
+        )();
+    }
+
+    async clickSelectAllOptions(): Promise<void> {
+        await this.focus();
+        await this.click();
+        const option = await this.getSelectAllOptions();
+        if (!option) {
+            throw Error(`Could not find a mer-select-all-options`);
+        }
+        await option.click();
     }
 
     /** Gets the selector that can be used to find the autocomplete trigger's panel. */
