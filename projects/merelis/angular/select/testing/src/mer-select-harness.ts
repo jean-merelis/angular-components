@@ -13,7 +13,7 @@ import { BaseHarnessFilters, ComponentHarness, HarnessPredicate, TestElement, Te
 import {
     MerSelectAllOptionHarness,
     SelectAllOptionHarnessFilters
-} from "@merelis/angular/select/testing/src/mer-select-all-option-harness";
+} from "./mer-select-all-option-harness";
 import { SelectOptionHarnessFilters, MerSelectOptionHarness } from "./mer-select-option-harness";
 
 export interface MerSelectHarnessFilters extends BaseHarnessFilters {
@@ -125,7 +125,7 @@ export class MerSelectHarness extends ComponentHarness {
         }
     }
 
-    async getSelectAllOptions(): Promise<MerSelectOptionHarness> {
+    async getSelectAllOptions(): Promise<MerSelectAllOptionHarness> {
         if (!(await this.isOpen())) {
             throw new Error('Unable to retrieve options for select. Select panel is closed.');
         }
