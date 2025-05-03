@@ -49,7 +49,10 @@ export function requiredValidator(value: any): ValidationErrors | null {
     return isEmptyInputValue(value) ? {'required': true} : null;
 }
 
-export function numericValidator(value: number | string): ValidationErrors | null {
+export function numericValidator(value: number | string | null | undefined): ValidationErrors | null {
+    if (value === undefined || value === null){
+        return null;
+    }
     if (isString(value)) {
         if (isBlank(value)) {
             return null;
@@ -60,6 +63,9 @@ export function numericValidator(value: number | string): ValidationErrors | nul
 }
 
 export function integerValidator(value: any): ValidationErrors | null {
+    if (value === undefined || value === null){
+        return null;
+    }
     if (isString(value)) {
         if (isBlank(value)) {
             return null;
@@ -74,6 +80,9 @@ export function integerValidator(value: any): ValidationErrors | null {
 }
 
 export function nonNegativeValidator(value: number | string): ValidationErrors | null {
+    if (value === undefined || value === null){
+        return null;
+    }
     if (isString(value)) {
         if (isBlank(value)) {
             return null;
@@ -90,7 +99,9 @@ export function nonNegativeValidator(value: number | string): ValidationErrors |
 
 
 export function minValidator(value: number | string, min: number): ValidationErrors | null {
-    if (value == null) return null;
+    if (value === undefined || value === null){
+        return null;
+    }
     if (typeof (value) === 'string') {
         value = Number(value);
     }
@@ -98,7 +109,9 @@ export function minValidator(value: number | string, min: number): ValidationErr
 }
 
 export function maxValidator(value: number | string, max: number): ValidationErrors | null {
-    if (value == null) return null;
+    if (value === undefined || value === null){
+        return null;
+    }
     if (typeof (value) === 'string') {
         value = Number(value);
     }
@@ -106,14 +119,18 @@ export function maxValidator(value: number | string, max: number): ValidationErr
 }
 
 export function minLengthValidator(value: string | any[], minlength: number): ValidationErrors | null {
-    if (value == null) return null;
+    if (value === undefined || value === null){
+        return null;
+    }
     const currentLength = value.length;
     return minlength > currentLength ? {minlength: {requiredLength: minlength, currentLength}} : null;
 }
 
 
 export function maxLengthValidator(value: string | any[], maxlength: number): ValidationErrors | null {
-    if (value == null) return null;
+    if (value === undefined || value === null){
+        return null;
+    }
     const currentLength = value.length;
     return currentLength > maxlength ? {maxlength: {requiredLength: maxlength, currentLength}} : null;
 }
