@@ -14,6 +14,13 @@ export interface TypeaheadSearchService<T> {
     search(query: string): Observable<T[]>;
 }
 
+/**
+ * Represents a function type definition for a typeahead search operation.
+ *
+ * @template T The type of the items returned in the search results.
+ * @param {string} query The search query string input used to perform the typeahead search.
+ * @returns {Observable<T[]>} An Observable that emits an array of type `T` items matching the search query.
+ */
 export type TypeaheadSearchFn<T> = (query: string) => Observable<T[]>;
 
 export interface TypeaheadDataSourceOptions<T> {
