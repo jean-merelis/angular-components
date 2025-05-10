@@ -1,5 +1,5 @@
 import { Comparable, DisplayWith, FilterPredicate } from "../types";
-import { BehaviorSubject, Observable } from "rxjs";
+import { BehaviorSubject, Observable, Subject } from "rxjs";
 
 export interface FilterCriteria<T> {
     searchText?: string;
@@ -37,6 +37,8 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
     protected _filteredData = new BehaviorSubject<T[]>([]);
     protected _currentFilter = new BehaviorSubject<FilterCriteria<T>>({});
     protected _alwaysIncludesSelected = false;
+    protected _onConnected = new Subject<void>();
+    protected _onDisconnected = new Subject<void>();
 
     get data(): T[] {
         return this._data.value;
@@ -74,6 +76,14 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
         this._applyFilters();
     }
 
+    get onConnected(): Observable<void> {
+        return this._onConnected.asObservable();
+    }
+
+    get onDisconnected(): Observable<void> {
+        return this._onDisconnected.asObservable();
+    }
+
     constructor(data?: T[], options?: {
         alwaysIncludesSelected?: boolean,
         compareWith?: Comparable<T>,
@@ -100,17 +110,20 @@ export class MerSelectDataSource<T> implements SelectDataSource<T> {
     }
 
     connect(): Observable<T[]> {
+        this._onConnected.next();
         return this._filteredData.asObservable();
     }
 
     disconnect(): void {
-        // No need to track viewers anymore
-    }
-
-    dispose(): void {
         this._data.complete();
         this._filteredData.complete();
         this._currentFilter.complete();
+        this._onConnected.complete();
+        this._onDisconnected.complete();
+        this._onConnected.complete();
+
+        this._onDisconnected.next();
+        this._onDisconnected.complete();
     }
 
     loading(): Observable<boolean> | undefined {

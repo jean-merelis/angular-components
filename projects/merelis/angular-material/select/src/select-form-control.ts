@@ -165,21 +165,21 @@ export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnI
         }
     }
 
-    // ngDoCheck() {
-    //     if (this.ngControl) {
-    //         // We need to re-evaluate this on every change detection cycle, because there are some
-    //         // error triggers that we can't subscribe to (e.g. parent form submissions). This means
-    //         // that whatever logic is in here has to be super lean or we risk destroying the performance.
-    //         this.updateErrorState();
-    //
-    //     }
-    //
-    //     // We need to dirty-check and set the placeholder attribute ourselves, because whether it's
-    //     // present or not depends on a query which is prone to "changed after checked" errors.
-    //     this._dirtyCheckPlaceholder();
-    // }
-    //
-    //
+    ngDoCheck() {
+        if (this.ngControl) {
+            // We need to re-evaluate this on every change detection cycle, because there are some
+            // error triggers that we can't subscribe to (e.g. parent form submissions). This means
+            // that whatever logic is in here has to be super lean or we risk destroying the performance.
+            this.updateErrorState();
+
+        }
+
+        // We need to dirty-check and set the placeholder attribute ourselves, because whether it's
+        // present or not depends on a query which is prone to "changed after checked" errors.
+        //  this._dirtyCheckPlaceholder();
+    }
+
+
     // private _previousPlaceholder?: string | null;
     // /** Does some manual dirty checking on the native input `placeholder` attribute. */
     // private _dirtyCheckPlaceholder() {
@@ -192,7 +192,7 @@ export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnI
     //         //     : element.removeAttribute('placeholder');
     //     }
     // }
-    //
+
     // /** Gets the current placeholder of the form field. */
     // protected _getPlaceholder(): string | null {
     //     return this.placeholder || null;

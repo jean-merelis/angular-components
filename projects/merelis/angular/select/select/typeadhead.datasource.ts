@@ -14,6 +14,8 @@ export interface TypeaheadSearchService<T> {
     search(query: string): Observable<T[]>;
 }
 
+export type TypeaheadSearchFn<T> = (query: string) => Observable<T[]>;
+
 export interface TypeaheadDataSourceOptions<T> {
 
     /**
@@ -43,6 +45,9 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
     // Stream of current data
     private data = new BehaviorSubject<T[]>([]);
 
+    protected _onConnected = new Subject<void>();
+    protected _onDisconnected = new Subject<void>();
+
     // Stream of loading state
     private loading$ = new BehaviorSubject<boolean>(false);
 
@@ -54,12 +59,36 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
     private compareWith: (a: T, b: T) => boolean;
 
     /**
-     * Creates a new TypeaheadDataSource
-     * @param searchService Service that implements the search functionality
-     * @param options
+     * Returns an Observable that emits when the connection is established.
+     *
+     * @return {Observable<void>} An Observable that emits a void value when the connection occurs.
+     */
+    get onConnected(): Observable<void> {
+        return this._onConnected.asObservable();
+    }
+
+    /**
+     * Returns an observable that emits when the disconnection event occurs.
+     *
+     * @return {Observable<void>} An observable that emits a void value upon disconnection.
+     */
+    get onDisconnected(): Observable<void> {
+        return this._onDisconnected.asObservable();
+    }
+
+    /**
+     * Constructs an instance of the class with the provided search service and options.
+     * Initializes the typeahead search pipeline, including handling cancellation of previous search requests, managing the inclusion of selected items, and emitting search results.
+     *
+     * @param {TypeaheadSearchFn<T> | TypeaheadSearchService<T>} searchService - The service or function used to perform the typeahead search. If a function is provided, it should return an observable with the search results.
+     * @param {TypeaheadDataSourceOptions<T>} [options={}] - Optional configuration options for the typeahead data source. Includes settings such as whether to always include selected items or suppress loading events.
+     * - `alwaysIncludeSelected`: Whether to always include selected items in the search results.
+     * - `suppressLoadingEvents`: Whether to suppress loading indicators during search operations.
+     * - `compareWith`: A comparison function to determine equality between items.
+     *
      */
     constructor(
-        private searchService: TypeaheadSearchService<T>,
+        private searchService: TypeaheadSearchFn<T> | TypeaheadSearchService<T>,
         private options: TypeaheadDataSourceOptions<T> = {}
     ) {
         this.alwaysIncludeSelected = options.alwaysIncludeSelected ?? false;
@@ -75,7 +104,12 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
                   this.loading$.next(true);
                 }
 
-                return this.searchService.search(criteria.searchText || '').pipe(
+                const searchQuery = criteria.searchText || '';
+                const searchResult = typeof this.searchService === 'function'
+                    ? this.searchService(searchQuery)
+                    : this.searchService.search(searchQuery);
+
+                return searchResult.pipe(
                     // Process the results to include selected items if needed
                     map(results => {
                         // Only process if we have search text, selected items, and alwaysIncludeSelected is true
@@ -137,6 +171,7 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
      * Required by SelectDataSource interface - returns the data stream
      */
     connect(): Observable<T[]> {
+        this._onConnected.next();
         return this.data.asObservable();
     }
 
@@ -147,6 +182,10 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
         this.searchSubject.complete();
         this.loading$.complete();
         this.data.complete();
+        this._onConnected.complete();
+
+        this._onDisconnected.next();
+        this._onDisconnected.complete();
     }
 
     /**
@@ -160,7 +199,7 @@ export class TypeaheadDataSource<T> implements SelectDataSource<T> {
      * Main method used by MerSelect for filtering
      * @param criteria The filter criteria from the component
      */
-    async applyFilter(criteria: FilterCriteria<T>): Promise<void> {
+    applyFilter(criteria: FilterCriteria<T>): void {
         // Pass the entire criteria object to our subject
         this.searchSubject.next(criteria);
     }
