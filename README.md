@@ -227,24 +227,32 @@ export class CustomDataSource<T> implements SelectDataSource<T> {
 
 The `MerSelect` supports typeahead functionality, allowing you to search for options as you type. The library provides a generic `TypeaheadDataSource` implementation that handles common typeahead requirements including search request cancellation, loading states, and result management.
 
+### TypeaheadSearchFn Type
+
+A simple function type that can be used to perform typeahead searches:
+
+```typescript
+export type TypeaheadSearchFn<T> = (query: string) => Observable<T[]>;
+```
+
 ### TypeaheadSearchService Interface
 
-First, implement the `TypeaheadSearchService` interface to define how search operations will be performed:
+Alternatively, you can implement the `TypeaheadSearchService` interface to define how search operations will be performed:
 
 ```typescript
 export interface TypeaheadSearchService<T> {
-  /**
-   * Search method that takes a query string and returns an Observable of results
-   * @param query The search query string
-   * @returns Observable of search results
-   */
-  search(query: string): Observable<T[]>;
+    /**
+     * Search method that takes a query string and returns an Observable of results
+     * @param query The search query string
+     * @returns Observable of search results
+     */
+    search(query: string): Observable<T[]>;
 }
 ```
 
 ### TypeaheadDataSourceOptions Interface
 
-The `TypeaheadDataSource` now accepts a configuration options object:
+The `TypeaheadDataSource` accepts a configuration options object:
 
 ```typescript
 export interface TypeaheadDataSourceOptions<T> {
@@ -273,6 +281,65 @@ The `TypeaheadDataSource` provides a robust solution for typeahead functionality
 
 #### Implementation
 
+You can implement typeahead functionality in two ways:
+
+##### 1. Using a Simple Search Function
+
+```typescript
+import { Injectable } from '@angular/core';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
+import { HttpClient } from '@angular/common/http';
+import { TypeaheadDataSource, TypeaheadDataSourceOptions } from '@merelis/angular/select';
+
+// Define your data model
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+@Component({
+  selector: 'app-user-search',
+  standalone: true,
+  imports: [MerSelect],
+  template: `
+    <mer-select
+      [(value)]="selectedUser"
+      [dataSource]="userDataSource"
+      [displayWith]="displayUserName"
+      [placeholder]="'Search for users...'">
+    </mer-select>
+  `
+})
+export class UserSearchComponent implements OnDestroy {
+  selectedUser: User | null = null;
+  userDataSource: TypeaheadDataSource<User>;
+  
+  constructor(private http: HttpClient) {
+    // Define a search function that returns an Observable
+    const searchFn = (query: string): Observable<User[]> => {
+      return this.http.get<User[]>(`/api/users?q=${query}`);
+    };
+    
+    // Define options for the data source
+    const options: TypeaheadDataSourceOptions<User> = {
+      compareWith: (a, b) => a.id === b.id
+    };
+    
+    // Create the data source with the search function and options
+    this.userDataSource = new TypeaheadDataSource<User>(searchFn, options);
+  }
+
+  // Display function for the select component
+  displayUserName(user: User): string {
+    return user?.name || '';
+  }
+}
+```
+
+##### 2. Using a TypeaheadSearchService
+
 ```typescript
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
@@ -295,32 +362,8 @@ export class UserSearchService implements TypeaheadSearchService<User> {
   search(query: string): Observable<User[]> {
     // Real implementation would use HttpClient
     return this.http.get<User[]>(`/api/users?q=${query}`);
-    
-    // Example of a mock implementation for testing:
-    /*
-    const users = [
-      { id: 1, name: 'John Smith', email: 'john@example.com' },
-      { id: 2, name: 'Mary Johnson', email: 'mary@example.com' },
-      { id: 3, name: 'Peter Williams', email: 'peter@example.com' }
-    ];
-    
-    const results = query 
-      ? users.filter(user => user.name.toLowerCase().includes(query.toLowerCase()))
-      : users;
-      
-    return of(results).pipe(delay(300)); // Simulate network delay
-    */
   }
 }
-```
-
-#### Usage in a Component
-
-```typescript
-import { Component, OnDestroy } from '@angular/core';
-import { MerSelect } from '@merelis/angular/select';
-import { TypeaheadDataSource, TypeaheadDataSourceOptions } from '@merelis/angular/select';
-import { UserSearchService, User } from './user-search.service';
 
 @Component({
   selector: 'app-user-search',
@@ -331,10 +374,8 @@ import { UserSearchService, User } from './user-search.service';
       [(value)]="selectedUser"
       [dataSource]="userDataSource"
       [displayWith]="displayUserName"
-      [placeholder]="'Search for users...'"
-      [debounceTime]="300">
+      [placeholder]="'Search for users...'">
     </mer-select>
-    <p *ngIf="selectedUser">Selected: {{selectedUser.name}}</p>
   `
 })
 export class UserSearchComponent implements OnDestroy {
@@ -342,39 +383,26 @@ export class UserSearchComponent implements OnDestroy {
   userDataSource: TypeaheadDataSource<User>;
   
   constructor(private userSearchService: UserSearchService) {
-    // Define options for the data source
-    const options: TypeaheadDataSourceOptions<User> = {
-      alwaysIncludeSelected: true,
-      compareWith: (a, b) => a.id === b.id,
-      suppressLoadingEvents: false
-    };
-    
     // Create the data source with the service and options
     this.userDataSource = new TypeaheadDataSource<User>(
       userSearchService,
-      options
+      {
+        compareWith: (a, b) => a.id === b.id
+      }
     );
   }
   
-  ngOnDestroy(): void {
-    // Cleanup resources
-    this.userDataSource.disconnect();
-  }
-  
-  // Display function for the select component
-  displayUserName(user: User): string {
-    return user?.name || '';
-  }
+  // Rest of the component...
 }
 ```
 
 ### TypeaheadDataSource API
 
-The `TypeaheadDataSource` constructor now accepts the following parameters:
+The `TypeaheadDataSource` constructor accepts the following parameters:
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| searchService | TypeaheadSearchService<T> | Yes | The service implementing the search functionality |
+| searchService | TypeaheadSearchFn<T> \| TypeaheadSearchService<T> | Yes | A function or service that implements the search functionality |
 | options | TypeaheadDataSourceOptions<T> | No | Configuration options object |
 
 #### TypeaheadDataSourceOptions Properties
@@ -397,11 +425,12 @@ The `TypeaheadDataSource` constructor now accepts the following parameters:
 
 ### Benefits of Using TypeaheadDataSource
 
-1. **Performance**: Efficiently handles rapid typing by cancelling outdated requests
-2. **User Experience**: Shows loading indicators at appropriate times
-3. **Resilience**: Provides graceful error handling
-4. **Flexibility**: Works with any data type and search implementation
-5. **Integration**: Seamlessly works with MerSelect's search capabilities
+1. **Flexibility**: Supports two ways to implement search - through a simple function or a full service
+2. **Performance**: Efficiently handles rapid typing by cancelling outdated requests
+3. **User Experience**: Shows loading indicators at appropriate times
+4. **Resilience**: Provides graceful error handling
+5. **Adaptability**: Works with any data type and search implementation
+6. **Integration**: Seamlessly works with MerSelect's search capabilities
 
 The `TypeaheadDataSource` implementation follows best practices for reactive programming with RxJS and works with both simple and complex typeahead scenarios.
 
