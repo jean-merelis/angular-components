@@ -15,6 +15,15 @@
                     [showMultiSelectAllOption]="true"
                     [placeholder]="'Select colors'">
         </mer-select>
+
+        <mer-select class="mer-standard"
+                    [dataSource]="colors"
+                    [(value)]="selectedColors"
+                    [multiple]="true"
+                    [showMultiSelectAllOption]="true"
+                    [placeholder]="'Select colors'"
+                    readOnly>
+        </mer-select>
     </div>
     <div class="result">
         <p *ngIf="selectedColors.length === 0">No colors selected</p>

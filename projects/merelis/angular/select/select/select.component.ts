@@ -266,6 +266,7 @@ export class MerSelectMultiActionsDef {
         "[class.mer-select]": "true",
         "[class.focused]": "_focused",
         "[class.disabled]": "disabled()",
+        "[class.readonly]": "readOnly()",
 
 
         "attr.autocomplete": 'off',
@@ -593,7 +594,6 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
                 this.previousDataSource?.disconnect();
                 this.previousDataSource = ds;
                 this.internalDataSource?.disconnect();
-                this.internalDataSource?.dispose();
                 this.internalDataSource = undefined;
                 this.connectDataSource(ds as SelectDataSource<T>);
             }
@@ -653,7 +653,6 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
         this._optionsSubscription?.unsubscribe();
         this.unsubscribeDataSource();
         this._connectedDataSource?.disconnect();
-        this.internalDataSource?.dispose();
         this.subSelectionChanges?.unsubscribe();
         this._activeOptionChanges.unsubscribe();
         this._keydownSubscription?.unsubscribe();
@@ -758,7 +757,7 @@ export class MerSelect<T> implements ControlValueAccessor, OnInit, OnDestroy, Af
     }
 
     protected createInternalDs(options: T[]): void {
-        this.internalDataSource?.dispose();
+        this.internalDataSource?.disconnect();
         this.internalDataSource = new MerSelectDataSource<T>(options ?? [], {
             alwaysIncludesSelected: this.alwaysIncludesSelected(),
             compareWith: this.compareWith(),

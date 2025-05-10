@@ -71,10 +71,10 @@ The `MerSelect` offers a robust alternative to the native HTML select, with addi
 #### Basic HTML
 
 ```html
-<mer-select 
-  [dataSource]="optionsList" 
-  [(value)]="selectedValue"
-  [placeholder]="'Select an option'">
+<mer-select
+    [dataSource]="optionsList"
+    [(value)]="selectedValue"
+    [placeholder]="'Select an option'">
 </mer-select>
 ```
 
@@ -122,13 +122,13 @@ The `MerSelect` offers a robust alternative to the native HTML select, with addi
 import { Component } from '@angular/core';
 
 interface User {
-  id: number;
-  name: string;
+    id: number;
+    name: string;
 }
 
 @Component({
-  selector: 'app-example',
-  template: `
+    selector: 'app-example',
+    template: `
     <mer-select
       [dataSource]="users"
       [(value)]="selectedUser"
@@ -143,33 +143,33 @@ interface User {
   `
 })
 export class ExampleComponent {
-  users: User[] = [
-    { id: 1, name: 'John Smith' },
-    { id: 2, name: 'Mary Johnson' },
-    { id: 3, name: 'Peter Williams' }
-  ];
-  selectedUser: User | null = null;
-  isLoading = false;
+    users: User[] = [
+        { id: 1, name: 'John Smith' },
+        { id: 2, name: 'Mary Johnson' },
+        { id: 3, name: 'Peter Williams' }
+    ];
+    selectedUser: User | null = null;
+    isLoading = false;
 
-  displayUserName(user: User): string {
-    return user.name;
-  }
+    displayUserName(user: User): string {
+        return user.name;
+    }
 
-  compareUsers(user1: User, user2: User): boolean {
-    return user1?.id === user2?.id;
-  }
+    compareUsers(user1: User, user2: User): boolean {
+        return user1?.id === user2?.id;
+    }
 
-  onPanelOpened(): void {
-    console.log('Options panel opened');
-  }
+    onPanelOpened(): void {
+        console.log('Options panel opened');
+    }
 
-  onPanelClosed(): void {
-    console.log('Options panel closed');
-  }
+    onPanelClosed(): void {
+        console.log('Options panel closed');
+    }
 
-  onInputChanged(text: string): void {
-    console.log('Search text:', text);
-  }
+    onInputChanged(text: string): void {
+        console.log('Search text:', text);
+    }
 }
 ```
 
@@ -197,16 +197,16 @@ When you implement and provide a custom `SelectDataSource`, the filtering behavi
 ```typescript
 export class CustomDataSource<T> implements SelectDataSource<T> {
     // ...
-    
+
     async applyFilter(criteria: FilterCriteria<T>): void | Promise<void> {
         // Here you implement your own filtering logic
         // The criteria parameter contains:
         // - searchText: the text typed by the user
         // - selected: the currently selected item(s)
-        
+
         // You can decide to include selected items even if they don't match the filter
         // (equivalent to the alwaysIncludesSelected behavior)
-        
+
         // You can also implement your own filtering logic
         // (equivalent to the filterPredicate behavior)
     }
@@ -256,22 +256,22 @@ The `TypeaheadDataSource` accepts a configuration options object:
 
 ```typescript
 export interface TypeaheadDataSourceOptions<T> {
-  /**
-   * Whether to always include selected items in the results. Default false.
-   */
-  alwaysIncludeSelected?: boolean;
+    /**
+     * Whether to always include selected items in the results. Default false.
+     */
+    alwaysIncludeSelected?: boolean;
 
-  /**
-   * Whether to suppress loading events. Default false.
-   */
-  suppressLoadingEvents?: boolean;
+    /**
+     * Whether to suppress loading events. Default false.
+     */
+    suppressLoadingEvents?: boolean;
 
-  /**
-   * Custom function to compare items for equality (defaults to comparing by reference)
-   * @param a First item to compare
-   * @param b Second item to compare
-   */
-  compareWith?: (a: T, b: T) => boolean;
+    /**
+     * Custom function to compare items for equality (defaults to comparing by reference)
+     * @param a First item to compare
+     * @param b Second item to compare
+     */
+    compareWith?: (a: T, b: T) => boolean;
 }
 ```
 
@@ -294,16 +294,16 @@ import { TypeaheadDataSource, TypeaheadDataSourceOptions } from '@merelis/angula
 
 // Define your data model
 interface User {
-  id: number;
-  name: string;
-  email: string;
+    id: number;
+    name: string;
+    email: string;
 }
 
 @Component({
-  selector: 'app-user-search',
-  standalone: true,
-  imports: [MerSelect],
-  template: `
+    selector: 'app-user-search',
+    standalone: true,
+    imports: [MerSelect],
+    template: `
     <mer-select
       [(value)]="selectedUser"
       [dataSource]="userDataSource"
@@ -313,28 +313,28 @@ interface User {
   `
 })
 export class UserSearchComponent implements OnDestroy {
-  selectedUser: User | null = null;
-  userDataSource: TypeaheadDataSource<User>;
-  
-  constructor(private http: HttpClient) {
-    // Define a search function that returns an Observable
-    const searchFn = (query: string): Observable<User[]> => {
-      return this.http.get<User[]>(`/api/users?q=${query}`);
-    };
-    
-    // Define options for the data source
-    const options: TypeaheadDataSourceOptions<User> = {
-      compareWith: (a, b) => a.id === b.id
-    };
-    
-    // Create the data source with the search function and options
-    this.userDataSource = new TypeaheadDataSource<User>(searchFn, options);
-  }
+    selectedUser: User | null = null;
+    userDataSource: TypeaheadDataSource<User>;
 
-  // Display function for the select component
-  displayUserName(user: User): string {
-    return user?.name || '';
-  }
+    constructor(private http: HttpClient) {
+        // Define a search function that returns an Observable
+        const searchFn = (query: string): Observable<User[]> => {
+            return this.http.get<User[]>(`/api/users?q=${query}`);
+        };
+
+        // Define options for the data source
+        const options: TypeaheadDataSourceOptions<User> = {
+            compareWith: (a, b) => a.id === b.id
+        };
+
+        // Create the data source with the search function and options
+        this.userDataSource = new TypeaheadDataSource<User>(searchFn, options);
+    }
+
+    // Display function for the select component
+    displayUserName(user: User): string {
+        return user?.name || '';
+    }
 }
 ```
 
@@ -349,27 +349,27 @@ import { TypeaheadSearchService, TypeaheadDataSource, TypeaheadDataSourceOptions
 
 // Define your data model
 interface User {
-  id: number;
-  name: string;
-  email: string;
+    id: number;
+    name: string;
+    email: string;
 }
 
 // Implement TypeaheadSearchService for your data type
 @Injectable({ providedIn: 'root' })
 export class UserSearchService implements TypeaheadSearchService<User> {
-  constructor(private http: HttpClient) {}
-  
-  search(query: string): Observable<User[]> {
-    // Real implementation would use HttpClient
-    return this.http.get<User[]>(`/api/users?q=${query}`);
-  }
+    constructor(private http: HttpClient) {}
+
+    search(query: string): Observable<User[]> {
+        // Real implementation would use HttpClient
+        return this.http.get<User[]>(`/api/users?q=${query}`);
+    }
 }
 
 @Component({
-  selector: 'app-user-search',
-  standalone: true,
-  imports: [MerSelect],
-  template: `
+    selector: 'app-user-search',
+    standalone: true,
+    imports: [MerSelect],
+    template: `
     <mer-select
       [(value)]="selectedUser"
       [dataSource]="userDataSource"
@@ -379,20 +379,20 @@ export class UserSearchService implements TypeaheadSearchService<User> {
   `
 })
 export class UserSearchComponent implements OnDestroy {
-  selectedUser: User | null = null;
-  userDataSource: TypeaheadDataSource<User>;
-  
-  constructor(private userSearchService: UserSearchService) {
-    // Create the data source with the service and options
-    this.userDataSource = new TypeaheadDataSource<User>(
-      userSearchService,
-      {
-        compareWith: (a, b) => a.id === b.id
-      }
-    );
-  }
-  
-  // Rest of the component...
+    selectedUser: User | null = null;
+    userDataSource: TypeaheadDataSource<User>;
+
+    constructor(private userSearchService: UserSearchService) {
+        // Create the data source with the service and options
+        this.userDataSource = new TypeaheadDataSource<User>(
+            userSearchService,
+            {
+                compareWith: (a, b) => a.id === b.id
+            }
+        );
+    }
+
+    // Rest of the component...
 }
 ```
 
@@ -444,12 +444,12 @@ The `MerSelect` allows customization of the trigger (clickable area) and options
 
 ```html
 <mer-select [dataSource]="users" [(value)]="selectedUser">
-  <ng-template merSelectTriggerDef>
-    <div class="custom-trigger">
-      <img *ngIf="selectedUser?.avatar" [src]="selectedUser.avatar" class="avatar">
-      <span>{{ selectedUser?.name }}</span>
-    </div>
-  </ng-template>
+    <ng-template merSelectTriggerDef>
+        <div class="custom-trigger">
+            <img *ngIf="selectedUser?.avatar" [src]="selectedUser.avatar" class="avatar">
+            <span>{{ selectedUser?.name }}</span>
+        </div>
+    </ng-template>
 </mer-select>
 ```
 
@@ -457,15 +457,15 @@ The `MerSelect` allows customization of the trigger (clickable area) and options
 
 ```html
 <mer-select [dataSource]="users" [(value)]="selectedUser">
-  <ng-template merSelectOptionDef let-option>
-    <div class="custom-option">
-      <img *ngIf="option.avatar" [src]="option.avatar" class="avatar">
-      <div class="user-info">
-        <div class="name">{{ option.name }}</div>
-        <div class="email">{{ option.email }}</div>
-      </div>
-    </div>
-  </ng-template>
+    <ng-template merSelectOptionDef let-option>
+        <div class="custom-option">
+            <img *ngIf="option.avatar" [src]="option.avatar" class="avatar">
+            <div class="user-info">
+                <div class="name">{{ option.name }}</div>
+                <div class="email">{{ option.email }}</div>
+            </div>
+        </div>
+    </ng-template>
 </mer-select>
 ```
 
@@ -494,22 +494,22 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MerSelectHarness } from '@merelis/angular/select/testing';
 
 describe('YourComponent', () => {
-  let fixture: ComponentFixture<YourComponent>;
-  let component: YourComponent;
-  let loader: HarnessLoader;
+    let fixture: ComponentFixture<YourComponent>;
+    let component: YourComponent;
+    let loader: HarnessLoader;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [YourComponent],
-      // Include other necessary imports here
-    }).compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [YourComponent],
+            // Include other necessary imports here
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(YourComponent);
-    component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
-  });
+        fixture = TestBed.createComponent(YourComponent);
+        component = fixture.componentInstance;
+        loader = TestbedHarnessEnvironment.loader(fixture);
+    });
 
-  // Tests go here
+    // Tests go here
 });
 ```
 
@@ -560,82 +560,82 @@ import { MerSelectHarness, MerSelectOptionHarness } from '@merelis/angular/selec
 import { MerSelect } from '@merelis/angular/select';
 
 @Component({
-  template: `
+    template: `
     <mer-select
       [dataSource]="fruits"
       [(value)]="selectedFruit"
       [placeholder]="'Select a fruit'">
     </mer-select>
   `,
-  standalone: true,
-  imports: [MerSelect]
+    standalone: true,
+    imports: [MerSelect]
 })
 class TestComponent {
-  fruits = ['Apple', 'Banana', 'Orange', 'Strawberry'];
-  selectedFruit: string | null = null;
+    fruits = ['Apple', 'Banana', 'Orange', 'Strawberry'];
+    selectedFruit: string | null = null;
 }
 
 describe('TestComponent', () => {
-  let fixture: ComponentFixture<TestComponent>;
-  let component: TestComponent;
-  let loader: HarnessLoader;
+    let fixture: ComponentFixture<TestComponent>;
+    let component: TestComponent;
+    let loader: HarnessLoader;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [TestComponent]
-    }).compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [TestComponent]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(TestComponent);
-    component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(TestComponent);
+        component = fixture.componentInstance;
+        loader = TestbedHarnessEnvironment.loader(fixture);
+        fixture.detectChanges();
+    });
 
-  it('should open the select and select an option', async () => {
-    // Get the select harness
-    const select = await loader.getHarness(MerSelectHarness);
-    
-    // Check initial state
-    expect(await select.getValue()).toBe('');
-    expect(await select.isOpen()).toBe(false);
-    
-    // Open the select
-    await select.click();
-    expect(await select.isOpen()).toBe(true);
-    
-    // Get all options
-    const options = await select.getOptions();
-    expect(options.length).toBe(4);
-    
-    // Click the "Banana" option
-    await select.clickOptions({ text: 'Banana' });
-    
-    // Check that the panel is closed after selection
-    expect(await select.isOpen()).toBe(false);
-    
-    // Check that the value is updated
-    expect(await select.getValue()).toBe('Banana');
-    expect(component.selectedFruit).toBe('Banana');
-  });
+    it('should open the select and select an option', async () => {
+        // Get the select harness
+        const select = await loader.getHarness(MerSelectHarness);
 
-  it('should filter options based on search text', async () => {
-    const select = await loader.getHarness(MerSelectHarness);
-    
-    // Open the select
-    await select.click();
-    
-    // Enter search text
-    await select.setTextSearch('ber');
-    
-    // Get filtered options
-    const options = await select.getOptions();
-    expect(options.length).toBe(1);
-    expect(await options[0].getText()).toBe('Strawberry');
-    
-    // Select the filtered option
-    await options[0].click();
-    expect(await select.getValue()).toBe('Strawberry');
-  });
+        // Check initial state
+        expect(await select.getValue()).toBe('');
+        expect(await select.isOpen()).toBe(false);
+
+        // Open the select
+        await select.click();
+        expect(await select.isOpen()).toBe(true);
+
+        // Get all options
+        const options = await select.getOptions();
+        expect(options.length).toBe(4);
+
+        // Click the "Banana" option
+        await select.clickOptions({ text: 'Banana' });
+
+        // Check that the panel is closed after selection
+        expect(await select.isOpen()).toBe(false);
+
+        // Check that the value is updated
+        expect(await select.getValue()).toBe('Banana');
+        expect(component.selectedFruit).toBe('Banana');
+    });
+
+    it('should filter options based on search text', async () => {
+        const select = await loader.getHarness(MerSelectHarness);
+
+        // Open the select
+        await select.click();
+
+        // Enter search text
+        await select.setTextSearch('ber');
+
+        // Get filtered options
+        const options = await select.getOptions();
+        expect(options.length).toBe(1);
+        expect(await options[0].getText()).toBe('Strawberry');
+
+        // Select the filtered option
+        await options[0].click();
+        expect(await select.getValue()).toBe('Strawberry');
+    });
 });
 ```
 
@@ -652,13 +652,13 @@ import { MerSelectHarness } from '@merelis/angular/select/testing';
 import { MerSelect } from '@merelis/angular/select';
 
 interface User {
-  id: number;
-  name: string;
-  email: string;
+    id: number;
+    name: string;
+    email: string;
 }
 
 @Component({
-  template: `
+    template: `
     <mer-select
       [dataSource]="users"
       [(value)]="selectedUser"
@@ -667,58 +667,58 @@ interface User {
       [placeholder]="'Select a user'">
     </mer-select>
   `,
-  standalone: true,
-  imports: [MerSelect]
+    standalone: true,
+    imports: [MerSelect]
 })
 class UserSelectComponent {
-  users: User[] = [
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
-    { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
-  ];
-  selectedUser: User | null = null;
-  
-  displayUser(user: User): string {
-    return user?.name || '';
-  }
-  
-  compareUsers(user1: User, user2: User): boolean {
-    return user1?.id === user2?.id;
-  }
+    users: User[] = [
+        { id: 1, name: 'John Doe', email: 'john@example.com' },
+        { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
+        { id: 3, name: 'Bob Johnson', email: 'bob@example.com' }
+    ];
+    selectedUser: User | null = null;
+
+    displayUser(user: User): string {
+        return user?.name || '';
+    }
+
+    compareUsers(user1: User, user2: User): boolean {
+        return user1?.id === user2?.id;
+    }
 }
 
 describe('UserSelectComponent', () => {
-  let fixture: ComponentFixture<UserSelectComponent>;
-  let component: UserSelectComponent;
-  let loader: HarnessLoader;
+    let fixture: ComponentFixture<UserSelectComponent>;
+    let component: UserSelectComponent;
+    let loader: HarnessLoader;
 
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [UserSelectComponent]
-    }).compileComponents();
+    beforeEach(async () => {
+        await TestBed.configureTestingModule({
+            imports: [UserSelectComponent]
+        }).compileComponents();
 
-    fixture = TestBed.createComponent(UserSelectComponent);
-    component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
-    fixture.detectChanges();
-  });
+        fixture = TestBed.createComponent(UserSelectComponent);
+        component = fixture.componentInstance;
+        loader = TestbedHarnessEnvironment.loader(fixture);
+        fixture.detectChanges();
+    });
 
-  it('should select a user by name and update the component model', async () => {
-    const select = await loader.getHarness(MerSelectHarness);
-    
-    // Open the select
-    await select.click();
-    
-    // Click the option with Jane's name
-    await select.clickOptions({ text: 'Jane Smith' });
-    
-    // Check that the select shows the correct text
-    expect(await select.getValue()).toBe('Jane Smith');
-    
-    // Check that the component model is updated with the correct object
-    expect(component.selectedUser).toEqual(component.users[1]);
-    expect(component.selectedUser?.id).toBe(2);
-  });
+    it('should select a user by name and update the component model', async () => {
+        const select = await loader.getHarness(MerSelectHarness);
+
+        // Open the select
+        await select.click();
+
+        // Click the option with Jane's name
+        await select.clickOptions({ text: 'Jane Smith' });
+
+        // Check that the select shows the correct text
+        expect(await select.getValue()).toBe('Jane Smith');
+
+        // Check that the component model is updated with the correct object
+        expect(component.selectedUser).toEqual(component.users[1]);
+        expect(component.selectedUser?.id).toBe(2);
+    });
 });
 ```
 
@@ -728,7 +728,7 @@ You can also test the multiple selection mode of the `MerSelect`:
 
 ```typescript
 @Component({
-  template: `
+    template: `
     <mer-select
       [dataSource]="colors"
       [(value)]="selectedColors"
@@ -736,44 +736,44 @@ You can also test the multiple selection mode of the `MerSelect`:
       [placeholder]="'Select colors'">
     </mer-select>
   `,
-  standalone: true,
-  imports: [MerSelect]
+    standalone: true,
+    imports: [MerSelect]
 })
 class ColorSelectComponent {
-  colors = ['Red', 'Green', 'Blue', 'Yellow', 'Purple'];
-  selectedColors: string[] = [];
+    colors = ['Red', 'Green', 'Blue', 'Yellow', 'Purple'];
+    selectedColors: string[] = [];
 }
 
 describe('ColorSelectComponent', () => {
-  // Test setup...
+    // Test setup...
 
-  it('should support multiple selection', async () => {
-    const select = await loader.getHarness(MerSelectHarness);
-    
-    // Open the select
-    await select.click();
-    
-    // Select multiple options
-    await select.clickOptions({ text: 'Red' });
-    await select.clickOptions({ text: 'Blue' });
-    await select.clickOptions({ text: 'Yellow' });
-    
-    // Check component model
-    expect(component.selectedColors).toEqual(['Red', 'Blue', 'Yellow']);
-    
-    // Verify that the selected options are marked as selected
-    const options = await select.getOptions();
-    for (const option of options) {
-      const text = await option.getText();
-      const isSelected = await option.isSelected();
-      
-      if (['Red', 'Blue', 'Yellow'].includes(text)) {
-        expect(isSelected).toBe(true);
-      } else {
-        expect(isSelected).toBe(false);
-      }
-    }
-  });
+    it('should support multiple selection', async () => {
+        const select = await loader.getHarness(MerSelectHarness);
+
+        // Open the select
+        await select.click();
+
+        // Select multiple options
+        await select.clickOptions({ text: 'Red' });
+        await select.clickOptions({ text: 'Blue' });
+        await select.clickOptions({ text: 'Yellow' });
+
+        // Check component model
+        expect(component.selectedColors).toEqual(['Red', 'Blue', 'Yellow']);
+
+        // Verify that the selected options are marked as selected
+        const options = await select.getOptions();
+        for (const option of options) {
+            const text = await option.getText();
+            const isSelected = await option.isSelected();
+
+            if (['Red', 'Blue', 'Yellow'].includes(text)) {
+                expect(isSelected).toBe(true);
+            } else {
+                expect(isSelected).toBe(false);
+            }
+        }
+    });
 });
 ```
 
@@ -798,18 +798,18 @@ import { MerSelect } from '@merelis/angular/select';
 import { MerSelectFormFieldControl } from "@merelis/angular-material/select";
 
 @Component({
-  selector: 'app-material-example',
-  standalone: true,
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    MerSelect,
-    MerSelectFormFieldControl
-  ],
-  providers: [
-    provideMerMaterialIntegration() // Enable integration with Angular Material
-  ],
-  template: `
+    selector: 'app-material-example',
+    standalone: true,
+    imports: [
+        MatFormFieldModule,
+        MatInputModule,
+        MerSelect,
+        MerSelectFormFieldControl
+    ],
+    providers: [
+        provideMerMaterialIntegration() // Enable integration with Angular Material
+    ],
+    template: `
     <mat-form-field appearance="outline">
       <mat-label>Select a user</mat-label>
       <mer-select merSelectFormField
@@ -824,20 +824,20 @@ import { MerSelectFormFieldControl } from "@merelis/angular-material/select";
   `
 })
 export class MaterialExampleComponent {
-  users = [
-    { id: 1, name: 'John Smith' },
-    { id: 2, name: 'Mary Johnson' },
-    { id: 3, name: 'Peter Williams' }
-  ];
-  selectedUser = null;
-  
-  displayUserName(user: any): string {
-    return user?.name || '';
-  }
+    users = [
+        { id: 1, name: 'John Smith' },
+        { id: 2, name: 'Mary Johnson' },
+        { id: 3, name: 'Peter Williams' }
+    ];
+    selectedUser = null;
 
-  compareUsers(user1: any, user2: any): boolean {
-    return user1?.id === user2?.id;
-  }
+    displayUserName(user: any): string {
+        return user?.name || '';
+    }
+
+    compareUsers(user1: any, user2: any): boolean {
+        return user1?.id === user2?.id;
+    }
 }
 ```
 
@@ -849,9 +849,9 @@ The `MerSelect` internally uses the `MerProgressBar` to display a loading indica
 
 ```html
 <mer-select
-  [dataSource]="dataItems"
-  [(value)]="selectedItem"
-  [loading]="isLoadingData">
+    [dataSource]="dataItems"
+    [(value)]="selectedItem"
+    [loading]="isLoadingData">
 </mer-select>
 ```
 
@@ -865,82 +865,96 @@ The components can be customized using CSS variables. Below are the available va
 
 ```scss
 .mer-select {
-  // Base select appearance
-  --mer-select-font: system-ui, Roboto, sans-serif;
-  --mer-select-font-size: 1em;
-  --mer-select-font-weight: normal;
-  --mer-select-line-height: 1em;
-  --mer-select-letter-spacing: normal;
-  --mer-select-min-height: 32px;
-  --mer-select-side-padding: 8px;
-  --mer-select-input-height: 100%;
-  --mer-select-input-width: 100%;
-  --mer-select-trigger-wrapper-gap: 4px;
-    
-    
-  // multiple select  
-  --mer-select-multiple-trigger-wrapper-gap: 4px;
-  --mer-select-multiple-side-padding: 2px;
-  --mer-select-multiple-input-min-width: 33%;
-  --mer-select-multiple-input-height: 24px;
-  --mer-select-multiple-input-padding: 0 4px;
-  --mer-select-multiple-values-gap: 4px;
-  --mer-select-multiple-values-padding: 0;
-  --mer-select-chip-background-color: #e6e6e6;
-  --mer-select-chip-border-radius: 8px;
-  --mer-select-chip-padding: 2px 2px 2px 8px;
-  --mer-select-chip-font-size: 0.875rem;
+    // Base select appearance
+    --mer-select-font: system-ui, Roboto, sans-serif;
+    --mer-select-font-size: 1em;
+    --mer-select-font-weight: normal;
+    --mer-select-line-height: 1em;
+    --mer-select-letter-spacing: normal;
+    --mer-select-min-height: 32px;
+    --mer-select-side-padding: 8px;
+    --mer-select-input-height: 100%;
+    --mer-select-input-width: 100%;
+    --mer-select-trigger-wrapper-gap: 4px;
 
-  --mer-select-chip-remove-cursor: pointer;
-  --mer-select-chip-remove-margin-left: 4px;
-  --mer-select-chip-remove-font-size: 1rem;
-  --mer-select-chip-remove-line-height: 1rem;
-  --mer-select-chip-remove-font-weight: normal;
-  --mer-select-chip-remove-text-color: #000;
-  --mer-select-chip-remove-bg-color: #d1d1d1;
-  --mer-select-chip-remove-border-radius: 9999px;
-  --mer-select-chip-remove-padding: 0;
-  --mer-select-chip-remove-width: 12px;
-  --mer-select-chip-remove-height: 12px;
-  --mer-select-chip-remove-opacity: .5;
 
-  --mer-select-chip-remove-text-color-hover: white;
-  --mer-select-chip-remove-bg-color-hover: #505050;
-  --mer-select-chip-remove-opacity-hover: 1;
-    
-  
-  // Colors and states
-  --mer-select-background-color: white;
-  --mer-select-color: black;
-  --mer-select-border: 1px solid #8c8a8a;
-  
-  // Focus state
-  --mer-select-background-color--focused: white;
-  --mer-select-color--focused: black;
-  --mer-select-border--focused: 1px solid #8c8a8a;
-  --mer-select-outline--focused: solid #4e95e8 2px;
-  --mer-select-outline-offset--focused: -1px;
-  
-  // Disabled state
-  --mer-select-background-color--disabled: #ececec;
-  --mer-select-color--disabled: #707070;
-  --mer-select-border--disabled: 1px solid #8c8a8a;
-  
-  // Invalid state
-  --mer-select-background-color--invalid: white;
-  --mer-select-color--invalid: black;
-  --mer-select-border--invalid: 1px solid #c10909;
-  --mer-select-outline--invalid: solid #c10909 2px;
-  --mer-select-outline-offset--invalid: -1px;
-  
-  // Icons
-  --mer-select-chevron-icon-color: #b3b3b3;
-  --mer-select-chevron-icon-color--hover: #353535;
-  
-  // Loading indicator
-  --mer-select-loading-height: 2px;
-  --mer-select-loading-background-color: #d7e8fb;
-  --mer-select-loading-color: #0772CD;
+    // multiple select  
+    --mer-select-multiple-trigger-wrapper-gap: 4px;
+    --mer-select-multiple-side-padding: 2px;
+    --mer-select-multiple-input-min-width: 33%;
+    --mer-select-multiple-input-height: 24px;
+    --mer-select-multiple-input-padding: 0 4px;
+    --mer-select-multiple-values-gap: 4px;
+    --mer-select-multiple-values-padding: 0;
+    --mer-select-chip-text-color: inherit;
+    --mer-select-chip-background-color: #e6e6e6;
+    --mer-select-chip-border-radius: 8px;
+    --mer-select-chip-border: none;
+    --mer-select-chip-padding-top: 2px;
+    --mer-select-chip-padding-right: 2px;
+    --mer-select-chip-padding-bottom: 2px;
+    --mer-select-chip-padding-left: 8px;
+    --mer-select-chip-font-size: 0.875rem;
+
+    --mer-select-chip-text-color-hover: var(--mer-select-chip-text-color, inherit);
+    --mer-select-chip-background-color-hover: var(--mer-select-chip-background-color,#e6e6e6);
+    --mer-select-chip-border-hover: var(--mer-select-chip-border, none);
+
+    --mer-select-chip-readonly-padding-right: 8px;
+
+    --mer-select-chip-remove-cursor: pointer;
+    --mer-select-chip-remove-margin-left: 4px;
+    --mer-select-chip-remove-font-size: 1rem;
+    --mer-select-chip-remove-line-height: 1rem;
+    --mer-select-chip-remove-font-weight: normal;
+    --mer-select-chip-remove-text-color: #000;
+    --mer-select-chip-remove-bg-color: #d1d1d1;
+    --mer-select-chip-remove-border-radius: 9999px;
+    --mer-select-chip-remove-padding: 0;
+    --mer-select-chip-remove-width: 12px;
+    --mer-select-chip-remove-height: 12px;
+    --mer-select-chip-remove-opacity: .5;
+    --mer-select-chip-remove-border: none;
+
+    --mer-select-chip-remove-text-color-hover: white;
+    --mer-select-chip-remove-bg-color-hover: #505050;
+    --mer-select-chip-remove-opacity-hover: 1;
+    --mer-select-chip-remove-border-hover: none;
+
+
+
+    // Colors and states
+    --mer-select-background-color: white;
+    --mer-select-color: black;
+    --mer-select-border: 1px solid #8c8a8a;
+
+    // Focus state
+    --mer-select-background-color--focused: white;
+    --mer-select-color--focused: black;
+    --mer-select-border--focused: 1px solid #8c8a8a;
+    --mer-select-outline--focused: solid #4e95e8 2px;
+    --mer-select-outline-offset--focused: -1px;
+
+    // Disabled state
+    --mer-select-background-color--disabled: #ececec;
+    --mer-select-color--disabled: #707070;
+    --mer-select-border--disabled: 1px solid #8c8a8a;
+
+    // Invalid state
+    --mer-select-background-color--invalid: white;
+    --mer-select-color--invalid: black;
+    --mer-select-border--invalid: 1px solid #c10909;
+    --mer-select-outline--invalid: solid #c10909 2px;
+    --mer-select-outline-offset--invalid: -1px;
+
+    // Icons
+    --mer-select-chevron-icon-color: #b3b3b3;
+    --mer-select-chevron-icon-color--hover: #353535;
+
+    // Loading indicator
+    --mer-select-loading-height: 2px;
+    --mer-select-loading-background-color: #d7e8fb;
+    --mer-select-loading-color: #0772CD;
 }
 ```
 
@@ -948,9 +962,9 @@ The components can be customized using CSS variables. Below are the available va
 
 ```scss
 .mer-select-panel {
-  --mer-select-panel-background-color: #ffffff;
-  --mer-select-panel-border-radius: 8px;
-  --mer-select-panel-box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+    --mer-select-panel-background-color: #ffffff;
+    --mer-select-panel-border-radius: 8px;
+    --mer-select-panel-box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
 }
 ```
 
@@ -958,30 +972,30 @@ The components can be customized using CSS variables. Below are the available va
 
 ```scss
 .mer-option {
-  // Base option appearance
-  --mer-option-font: system-ui, Roboto, sans-serif;
-  --mer-option-font-size: 1em;
-  --mer-option-font-weight: normal;
-  --mer-option-line-height: 1em;
-  --mer-option-letter-spacing: normal;
-  --mer-option-min-height: 48px;
-  --mer-option-side-padding: 8px;
-  --mer-option-material-side-padding: 16px;
-  --mer-option-group-indent: 20px;
-  
-  // Colors and states
-  --mer-option-color: #121212;
-  --mer-option-hover-background-color: #f6f6f6;
-  --mer-option-active-background-color: #ececec;
-  --mer-option-selected-color: #0d67ca;
-  --mer-option-selected-background-color: #eef6ff;
-  
-  --mer-option-selected-hover-color: #0d67ca;
-  --mer-option-selected-hover-background-color: #e1eef8;
-  --mer-option-selected-active-color: #0d67ca;
-  --mer-option-selected-active-background-color: #dcecfb;
-  --mer-option-selected-active-hover-color: #0d67ca;
-  --mer-option-selected-active-hover-background-color: #dceafa;
+    // Base option appearance
+    --mer-option-font: system-ui, Roboto, sans-serif;
+    --mer-option-font-size: 1em;
+    --mer-option-font-weight: normal;
+    --mer-option-line-height: 1em;
+    --mer-option-letter-spacing: normal;
+    --mer-option-min-height: 48px;
+    --mer-option-side-padding: 8px;
+    --mer-option-material-side-padding: 16px;
+    --mer-option-group-indent: 20px;
+
+    // Colors and states
+    --mer-option-color: #121212;
+    --mer-option-hover-background-color: #f6f6f6;
+    --mer-option-active-background-color: #ececec;
+    --mer-option-selected-color: #0d67ca;
+    --mer-option-selected-background-color: #eef6ff;
+
+    --mer-option-selected-hover-color: #0d67ca;
+    --mer-option-selected-hover-background-color: #e1eef8;
+    --mer-option-selected-active-color: #0d67ca;
+    --mer-option-selected-active-background-color: #dcecfb;
+    --mer-option-selected-active-hover-color: #0d67ca;
+    --mer-option-selected-active-hover-background-color: #dceafa;
 }
 
 ```
@@ -990,9 +1004,9 @@ The components can be customized using CSS variables. Below are the available va
 
 ```scss
 .mer-progress-bar {
-  --mer-progress-bar-height: 4px;
-  --mer-progress-bar-background-color: rgba(5, 114, 206, 0.2);
-  --mer-progress-bar-color: rgb(5, 114, 206);
+    --mer-progress-bar-height: 4px;
+    --mer-progress-bar-background-color: rgba(5, 114, 206, 0.2);
+    --mer-progress-bar-color: rgb(5, 114, 206);
 }
 ```
 

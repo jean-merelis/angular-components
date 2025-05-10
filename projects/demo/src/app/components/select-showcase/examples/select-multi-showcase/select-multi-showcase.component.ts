@@ -32,6 +32,15 @@ export class SelectMultiShowcaseComponent {
                 [showMultiSelectAllOption]="true"
                 [placeholder]="'Select colors'">
     </mer-select>
+
+    <mer-select class="mer-standard"
+                [dataSource]="colors"
+                [(value)]="selectedColors"
+                [multiple]="true"
+                [showMultiSelectAllOption]="true"
+                [placeholder]="'Select colors'"
+                readOnly>
+    </mer-select>
     `;
     tsCode = `
 import { NgFor, NgIf } from "@angular/common";

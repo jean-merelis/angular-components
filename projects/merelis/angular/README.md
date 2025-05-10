@@ -886,10 +886,21 @@ The components can be customized using CSS variables. Below are the available va
   --mer-select-multiple-input-padding: 0 4px;
   --mer-select-multiple-values-gap: 4px;
   --mer-select-multiple-values-padding: 0;
+  --mer-select-chip-text-color: inherit;
   --mer-select-chip-background-color: #e6e6e6;
   --mer-select-chip-border-radius: 8px;
-  --mer-select-chip-padding: 2px 2px 2px 8px;
+  --mer-select-chip-border: none;
+  --mer-select-chip-padding-top: 2px;
+  --mer-select-chip-padding-right: 2px;
+  --mer-select-chip-padding-bottom: 2px;
+  --mer-select-chip-padding-left: 8px;
   --mer-select-chip-font-size: 0.875rem;
+
+  --mer-select-chip-text-color-hover: var(--mer-select-chip-text-color, inherit);
+  --mer-select-chip-background-color-hover: var(--mer-select-chip-background-color,#e6e6e6);
+  --mer-select-chip-border-hover: var(--mer-select-chip-border, none);
+
+  --mer-select-chip-readonly-padding-right: 8px;
 
   --mer-select-chip-remove-cursor: pointer;
   --mer-select-chip-remove-margin-left: 4px;
@@ -903,11 +914,14 @@ The components can be customized using CSS variables. Below are the available va
   --mer-select-chip-remove-width: 12px;
   --mer-select-chip-remove-height: 12px;
   --mer-select-chip-remove-opacity: .5;
+  --mer-select-chip-remove-border: none;
 
   --mer-select-chip-remove-text-color-hover: white;
   --mer-select-chip-remove-bg-color-hover: #505050;
   --mer-select-chip-remove-opacity-hover: 1;
-    
+  --mer-select-chip-remove-border-hover: none;
+
+ 
   
   // Colors and states
   --mer-select-background-color: white;
