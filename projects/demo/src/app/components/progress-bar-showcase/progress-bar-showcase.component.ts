@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MerProgressBar } from '@merelis/angular/progress-bar';
 
@@ -7,10 +7,9 @@ import { MerProgressBar } from '@merelis/angular/progress-bar';
     selector: 'app-progress-bar-showcase',
     standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        MerProgressBar
-    ],
+    FormsModule,
+    MerProgressBar
+],
     templateUrl: './progress-bar-showcase.component.html',
     styleUrls: ['./progress-bar-showcase.component.scss']
 })

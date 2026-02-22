@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common';
+
 import { Component } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -23,17 +23,16 @@ interface ExampleTab {
     selector: 'app-select-showcase',
     standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        ReactiveFormsModule,
-        RouterModule,
-        SelectMaterialShowcaseComponent,
-        SelectBasicShowcaseComponent,
-        SelectObjectsShowcaseComponent,
-        SelectCustomTemplateShowcaseComponent,
-        SelectMultiShowcaseComponent,
-        SelectStatesShowcaseComponent,
-    ],
+    FormsModule,
+    ReactiveFormsModule,
+    RouterModule,
+    SelectMaterialShowcaseComponent,
+    SelectBasicShowcaseComponent,
+    SelectObjectsShowcaseComponent,
+    SelectCustomTemplateShowcaseComponent,
+    SelectMultiShowcaseComponent,
+    SelectStatesShowcaseComponent
+],
     templateUrl: './select-showcase.component.html',
     styleUrls: ['./select-showcase.component.scss']
 })

@@ -21,12 +21,6 @@ export class SelectStatesShowcaseComponent {
 
     toggleLoading(): void {
         this.statesLoading = !this.statesLoading;
-
-        if (this.statesLoading) {
-            setTimeout(() => {
-                this.statesLoading = false;
-            }, 2000);
-        }
     }
 
     toggleDisabled(): void {
@@ -84,12 +78,6 @@ export class SelectStatesShowcaseComponent {
 
     toggleLoading(): void {
         this.statesLoading = !this.statesLoading;
-
-        if (this.statesLoading) {
-            setTimeout(() => {
-                this.statesLoading = false;
-            }, 2000);
-        }
     }
 
     toggleDisabled(): void {

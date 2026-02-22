@@ -4,6 +4,12 @@ A library of reusable Angular components and utilities that provides high-qualit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## Compatibility
+
+| Library Version | Angular Version | Zone.js | Test Runner |
+|-----------------|-----------------|---------|-------------|
+| 2.x             | 21.x            | Zoneless | Vitest      |
+| 1.x             | 19.x            | zone.js | Karma/Jasmine |
 
 ## Showcase
 https://jean-merelis.github.io/angular-components/
@@ -446,7 +452,9 @@ The `MerSelect` allows customization of the trigger (clickable area) and options
 <mer-select [dataSource]="users" [(value)]="selectedUser">
     <ng-template merSelectTriggerDef>
         <div class="custom-trigger">
-            <img *ngIf="selectedUser?.avatar" [src]="selectedUser.avatar" class="avatar">
+            @if (selectedUser?.avatar) {
+                <img [src]="selectedUser.avatar" class="avatar">
+            }
             <span>{{ selectedUser?.name }}</span>
         </div>
     </ng-template>
@@ -459,7 +467,9 @@ The `MerSelect` allows customization of the trigger (clickable area) and options
 <mer-select [dataSource]="users" [(value)]="selectedUser">
     <ng-template merSelectOptionDef let-option>
         <div class="custom-option">
-            <img *ngIf="option.avatar" [src]="option.avatar" class="avatar">
+            @if (option.avatar) {
+                <img [src]="option.avatar" class="avatar">
+            }
             <div class="user-info">
                 <div class="name">{{ option.name }}</div>
                 <div class="email">{{ option.email }}</div>

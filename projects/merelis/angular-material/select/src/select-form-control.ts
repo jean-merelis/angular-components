@@ -4,6 +4,7 @@ import {
     booleanAttribute,
     DestroyRef,
     Directive, EnvironmentInjector,
+    forwardRef,
     inject,
     Injector,
     input,
@@ -22,7 +23,7 @@ import { Observable, Subject } from "rxjs";
 @Directive({
     selector: "mer-select[merSelectFormField]",
     standalone: true,
-    providers: [{provide: MatFormFieldControl, useExisting: MerSelectFormFieldControl}],
+    providers: [{provide: MatFormFieldControl, useExisting: forwardRef(() => MerSelectFormFieldControl)}],
 })
 export class MerSelectFormFieldControl<T> implements MatFormFieldControl<T>, OnInit, OnDestroy, AfterViewInit {
     readonly errorStateMatcher = input<ErrorStateMatcher>();

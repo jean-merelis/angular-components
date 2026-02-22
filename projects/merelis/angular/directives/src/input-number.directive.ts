@@ -5,7 +5,6 @@ import {
     effect,
     ElementRef,
     forwardRef,
-    HostListener,
     inject,
     input,
     LOCALE_ID,
@@ -34,26 +33,32 @@ export const MER_INPUT_NUMBER_VALUE_ACCESSOR: any = {
 };
 
 @Directive({
-    selector: "[merInputNumber]",
+    selector: "input[merInputNumber]",
     providers: [MER_INPUT_NUMBER_VALUE_ACCESSOR,
         {
             provide: NG_VALIDATORS,
             useExisting: forwardRef(() => MerInputNumberDirective),
             multi: true
         }
-    ]
+    ],
+    host: {
+        "(input)": "onInput()",
+        "(keydown.enter)": "onEnterKeyDown()",
+        "(blur)": "onBlur()",
+    },
+    standalone: true
 })
 export class MerInputNumberDirective implements ControlValueAccessor, OnInit {
     protected _renderer = inject(Renderer2);
     protected _elementRef = inject(ElementRef);
     protected _locale = inject(LOCALE_ID);
 
-    validateFn: any;
     readonly digits = model("1.0-8");
     readonly locale = input<string>();
     readonly valueAsString = input(false, {transform: booleanAttribute});
-    readonly integer = input(false, {transform: booleanAttribute});
+    readonly inputModeInteger = input(false, {transform: booleanAttribute});
     readonly isPercentage = input(false, {transform: booleanAttribute});
+    readonly updateOn = input<'change' | 'blur'>("change", {alias: "merInputNumberUpdateOn"});
 
     protected _value: number | string | null = null;
     protected _numberPipe: DecimalPipe;
@@ -62,11 +67,19 @@ export class MerInputNumberDirective implements ControlValueAccessor, OnInit {
     protected _onChangeCallback: (_: any) => void = noop;
     protected separators!: { group: string, decimal: string };
 
+    get isDisabled(): boolean {
+        return (this._elementRef.nativeElement as HTMLInputElement).disabled;
+    }
+
+    get isReadOnly(): boolean {
+        return (this._elementRef.nativeElement as HTMLInputElement).readOnly;
+    }
+
     constructor() {
         this._numberPipe = new DecimalPipe(this._locale);
         this._percentagePipe = new PercentPipe(this._locale);
         effect(() => {
-            if (this.integer()) {
+            if (this.inputModeInteger()) {
                 this._renderer.setProperty(this._elementRef.nativeElement, "inputmode", "numeric");
             } else {
                 this._renderer.setProperty(this._elementRef.nativeElement, "inputmode", "decimal");
@@ -79,17 +92,13 @@ export class MerInputNumberDirective implements ControlValueAccessor, OnInit {
         });
         effect(() => {
             this.isPercentage();
-            this._toValue();
+            this._toValue(true);
         });
     }
 
     ngOnInit(): void {
         this._renderer.setProperty(this._elementRef.nativeElement, "autocomplete", "off");
     }
-
-    ngOnDestroy(): void {
-    }
-
 
     validate(c: FormControl): any {
         return ValueValidators.numeric(c.value);
@@ -115,16 +124,20 @@ export class MerInputNumberDirective implements ControlValueAccessor, OnInit {
         this._renderer.setProperty(this._elementRef.nativeElement, "value", v);
     }
 
-    @HostListener("keydown.enter", ["$event"])
-    onEnterKeyDown(evt: KeyboardEvent): void {
-        if (!(this._elementRef.nativeElement as HTMLInputElement).disabled
-            && !(this._elementRef.nativeElement as HTMLInputElement).readOnly) {
-            this._toValue();
+    protected onInput(): void {
+        if (this.updateOn() === "blur" || this.isDisabled || this.isReadOnly) {
+            return;
+        }
+        this._toValue(false);
+    }
+
+    protected onEnterKeyDown(): void {
+        if (!this.isDisabled && !this.isReadOnly) {
+            this._toValue(true);
         }
     }
 
-    @HostListener("blur", ["$event"])
-    onBlur(event: Event): void {
+    protected onBlur(): void {
         if (!(this._elementRef.nativeElement as HTMLInputElement).disabled
             && !(this._elementRef.nativeElement as HTMLInputElement).readOnly) {
             this._toValue(true);
@@ -133,7 +146,7 @@ export class MerInputNumberDirective implements ControlValueAccessor, OnInit {
     }
 
 
-    protected _toValue(writeToViewValue: boolean = true): void {
+    protected _toValue(writeToViewValue: boolean): void {
         let viewValue = (this._elementRef.nativeElement as HTMLInputElement).value;
         viewValue = (viewValue || "").trim();
         if (isBlank(viewValue)) {

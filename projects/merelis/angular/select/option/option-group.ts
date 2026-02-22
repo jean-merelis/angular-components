@@ -2,6 +2,7 @@ import {
     booleanAttribute,
     ChangeDetectionStrategy,
     Component,
+    forwardRef,
     InjectionToken,
     input,
     ViewEncapsulation,
@@ -35,7 +36,7 @@ export const MER_OPTION_GROUP = new InjectionToken<MerOptionGroup>('MerOptionGro
         '[attr.aria-disabled]': 'disabled().toString()',
         '[attr.aria-labelledby]': '_labelId',
     },
-    providers: [{provide: MER_OPTION_GROUP, useExisting: MerOptionGroup}],
+    providers: [{provide: MER_OPTION_GROUP, useExisting: forwardRef(() => MerOptionGroup)}],
     standalone: true,
 })
 export class MerOptionGroup {

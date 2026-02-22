@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from "@angular/common";
+
 import { Component } from '@angular/core';
 import { MerSelect } from "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
@@ -6,10 +6,9 @@ import { HighlightComponent } from "../../../highlight/highlight.component";
 @Component({
   selector: 'app-select-multi-showcase',
   imports: [
-      NgIf, NgFor,
-      MerSelect,
-      HighlightComponent
-  ],
+    MerSelect,
+    HighlightComponent
+],
   templateUrl: './select-multi-showcase.component.html',
   styleUrl: './select-multi-showcase.component.scss'
 })

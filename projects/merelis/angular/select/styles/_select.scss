@@ -288,7 +288,7 @@ $background-color: white;
             }
 
             &.disabled {
-                color: var(--mdc-outlined-text-field-disabled-input-text-color);
+                color: var(--mat-form-field-outlined-disabled-input-text-color);
                 background-color: transparent;
                 border: none;
                 outline: none;
@@ -322,7 +322,7 @@ $background-color: white;
 
     mat-form-field.mat-form-field-appearance-fill{
         &.disabled{
-            color: var(--mdc-filled-text-field-disabled-input-text-color);
+            color: var(--mat-form-field-filled-disabled-input-text-color);
         }
         .chevron-wrapper {
             margin-top: -12px;

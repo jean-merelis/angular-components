@@ -1,4 +1,3 @@
-import { NgClass } from '@angular/common';
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -24,7 +23,7 @@ import { HighlightService } from "./highlight.service";
     styleUrls: ['./highlight.component.scss'],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [NgClass],
+    imports: [],
 })
 export class HighlightComponent implements OnChanges, AfterViewInit {
     private _service = inject(HighlightService);

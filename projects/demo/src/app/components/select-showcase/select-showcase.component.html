@@ -1,42 +1,51 @@
 <h2>MerSelect Component</h2>
 
 <div class="tabs">
+  @for (tab of tabs; track tab) {
     <button
-        *ngFor="let tab of tabs"
-        [class.active]="activeTab === tab.id"
-        (click)="setTab(tab.id)">
-        {{ tab.title }}
+      [class.active]="activeTab === tab.id"
+      (click)="setTab(tab.id)">
+      {{ tab.title }}
     </button>
+  }
 </div>
 
-<div class="example-container" [ngSwitch]="activeTab">
-
+<div class="example-container">
+  @switch (activeTab) {
     <!-- Basic Usage -->
-    <div *ngSwitchCase="'basic'" class="example">
+    @case ('basic') {
+      <div class="example">
         <app-select-basic-showcase></app-select-basic-showcase>
-    </div>
-
+      </div>
+    }
     <!-- Object Selection -->
-    <div *ngSwitchCase="'objects'" class="example">
+    @case ('objects') {
+      <div class="example">
         <app-select-objects-showcase></app-select-objects-showcase>
-    </div>
-
+      </div>
+    }
     <!-- Multiple Selection -->
-    <div *ngSwitchCase="'multiple'" class="example">
+    @case ('multiple') {
+      <div class="example">
         <app-select-multi-showcase></app-select-multi-showcase>
-    </div>
-
+      </div>
+    }
     <!-- Component States -->
-    <div *ngSwitchCase="'states'" class="example">
+    @case ('states') {
+      <div class="example">
         <app-select-states-showcase></app-select-states-showcase>
-    </div>
-
+      </div>
+    }
     <!-- Custom Templates -->
-    <div *ngSwitchCase="'custom'" class="example">
+    @case ('custom') {
+      <div class="example">
         <app-select-custom-template-showcase></app-select-custom-template-showcase>
-    </div>
-
-    <div *ngSwitchCase="'material'" class="example">
+      </div>
+    }
+    @case ('material') {
+      <div class="example">
         <app-select-material-showcase></app-select-material-showcase>
-    </div>
+      </div>
+    }
+  }
 </div>

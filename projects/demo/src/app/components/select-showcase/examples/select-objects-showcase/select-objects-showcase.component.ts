@@ -1,4 +1,4 @@
-import { NgIf } from "@angular/common";
+
 import { Component } from '@angular/core';
 import { MerSelect } from "../../../../../../../merelis/angular/select";
 import { HighlightComponent } from "../../../highlight/highlight.component";
@@ -13,10 +13,9 @@ interface User {
 @Component({
   selector: 'app-select-objects-showcase',
   imports: [
-      NgIf,
-      MerSelect,
-      HighlightComponent
-  ],
+    MerSelect,
+    HighlightComponent
+],
   templateUrl: './select-objects-showcase.component.html',
   styleUrl: './select-objects-showcase.component.scss'
 })

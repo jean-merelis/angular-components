@@ -8,10 +8,9 @@ import {
     Component,
     ElementRef,
     EventEmitter,
-    Inject,
+    inject,
     Input,
     OnDestroy,
-    Optional,
     Output,
     ViewChild,
     ViewEncapsulation,
@@ -110,13 +109,10 @@ export class MerOption<T = any> implements FocusableOption, AfterViewChecked, On
     /** Emits when the state of the option changes and any parents have to be notified. */
     readonly _stateChanges = new Subject<void>();
 
-    constructor(
-        private _element: ElementRef<HTMLElement>,
-        public _changeDetectorRef: ChangeDetectorRef,
-        @Optional() @Inject(MER_OPTION_PARENT_COMPONENT) private _parent: MerOptionParentComponent,
-        @Optional() @Inject(MER_OPTION_GROUP) public group: MerOptionGroup,
-    ) {
-    }
+    private _element = inject(ElementRef<HTMLElement>);
+    _changeDetectorRef = inject(ChangeDetectorRef);
+    private _parent = inject(MER_OPTION_PARENT_COMPONENT, { optional: true });
+    group = inject(MER_OPTION_GROUP, { optional: true });
 
     /**
      * Whether or not the option is currently active and ready to be selected.

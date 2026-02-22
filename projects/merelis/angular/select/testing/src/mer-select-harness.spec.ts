@@ -1,7 +1,6 @@
-import { OverlayModule } from "@angular/cdk/overlay";
 import {Component} from '@angular/core';
 
-import { ComponentFixture, fakeAsync, flush, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {HarnessLoader} from '@angular/cdk/testing';
 import {TestbedHarnessEnvironment} from '@angular/cdk/testing/testbed';
 import { provideNoopAnimations } from "@angular/platform-browser/animations";
@@ -65,16 +64,15 @@ describe('MerSelectHarness', () => {
         expect(await input.getValue()).toBe('');
     });
 
-    it('should be able to get the autocomplete panel options', fakeAsync(async () => {
+    it('should be able to get the autocomplete panel options', async () => {
         const input = await loader.getHarness(MerSelectHarness.with({selector: '#plain'}));
         await input.focus();
         await input.click();
-        flush();
         const options = await input.getOptions();
 
         expect(options.length).toBe(11);
         expect(await options[5].getText()).toBe('New York');
-    }));
+    });
 
     it('should be able to get filtered options', async () => {
         const input = await loader.getHarness(MerSelectHarness.with({selector: '#plain'}));
